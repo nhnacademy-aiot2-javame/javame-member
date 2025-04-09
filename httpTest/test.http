@@ -1,0 +1,17 @@
+POST http://localhost:8000/api/v1/members
+Content-Type: application/json
+
+{
+  "memberBirth": "2015-03-04",
+  "memberEmail": "wjdwldus0809@naver.com",
+  "memberId": "jjyeonplt",
+  "memberMobile": "010-3333-4444",
+  "memberName": "정지연",
+  "memberPassword": "TestTest0808!!",
+  "memberSex": "F"
+}
+
+###
+GET http://localhost:10256/api/v1/members/jjyeonplt
+
+###
