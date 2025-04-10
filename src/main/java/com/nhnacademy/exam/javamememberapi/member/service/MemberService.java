@@ -1,8 +1,6 @@
 package com.nhnacademy.exam.javamememberapi.member.service;
 
-import com.nhnacademy.exam.javamememberapi.member.dto.MemberRegisterRequest;
-import com.nhnacademy.exam.javamememberapi.member.dto.MemberResponse;
-import com.nhnacademy.exam.javamememberapi.member.dto.MemberUpdateRequest;
+import com.nhnacademy.exam.javamememberapi.member.dto.*;
 
 import java.lang.reflect.Member;
 
@@ -22,4 +20,5 @@ public interface MemberService {
     // delete
     void deleteMember(Long memberNo);
 
+    LoginResponse getLoginInfo(LoginRequest loginRequest);
 }

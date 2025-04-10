@@ -64,7 +64,7 @@ public class MemberRepositoryTest {
         Optional<Member> optionalMember = memberRepository.getMemberByMemberId("member2");
         Assertions.assertTrue(optionalMember.isPresent());
         Assertions.assertAll(
-                ()-> Assertions.assertEquals(memberNos.get(3), optionalMember.get().getMemberNo()),
+                ()-> Assertions.assertEquals(memberNos.get(1), optionalMember.get().getMemberNo()),
                 ()-> Assertions.assertEquals("member2", optionalMember.get().getMemberId()),
                 ()-> Assertions.assertEquals("password2", optionalMember.get().getMemberPassword()),
                 ()-> Assertions.assertEquals("memberName2", optionalMember.get().getMemberName()),
@@ -80,10 +80,10 @@ public class MemberRepositoryTest {
     @Test
     @DisplayName("회원번호로 멤버 가져오기")
     void getMemberByMemberNo(){
-        Optional<Member> optionalMember = memberRepository.getMemberByMemberNo(memberNos.get(3));
+        Optional<Member> optionalMember = memberRepository.getMemberByMemberNo(memberNos.get(1));
         Assertions.assertTrue(optionalMember.isPresent());
         Assertions.assertAll(
-                ()-> Assertions.assertEquals(memberNos.get(3), optionalMember.get().getMemberNo()),
+                ()-> Assertions.assertEquals(memberNos.get(1), optionalMember.get().getMemberNo()),
                 () -> Assertions.assertEquals("member2", optionalMember.get().getMemberId()),
                 ()-> Assertions.assertEquals("password2", optionalMember.get().getMemberPassword()),
                 ()-> Assertions.assertEquals("memberName2", optionalMember.get().getMemberName()),

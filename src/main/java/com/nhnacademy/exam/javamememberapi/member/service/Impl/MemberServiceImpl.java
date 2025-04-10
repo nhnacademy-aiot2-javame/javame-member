@@ -3,9 +3,7 @@ package com.nhnacademy.exam.javamememberapi.member.service.Impl;
 import com.nhnacademy.exam.javamememberapi.member.common.AlreadyExistException;
 import com.nhnacademy.exam.javamememberapi.member.common.NotExistMemberException;
 import com.nhnacademy.exam.javamememberapi.member.domain.Member;
-import com.nhnacademy.exam.javamememberapi.member.dto.MemberRegisterRequest;
-import com.nhnacademy.exam.javamememberapi.member.dto.MemberResponse;
-import com.nhnacademy.exam.javamememberapi.member.dto.MemberUpdateRequest;
+import com.nhnacademy.exam.javamememberapi.member.dto.*;
 import com.nhnacademy.exam.javamememberapi.member.repository.MemberRepository;
 import com.nhnacademy.exam.javamememberapi.member.service.MemberService;
 import jakarta.transaction.Transactional;
@@ -104,4 +102,9 @@ public class MemberServiceImpl implements MemberService {
     memberRepository.delete(member);
     }
 
+    @Override
+    public LoginResponse getLoginInfo(LoginRequest loginRequest) {
+        Member member = memberRepository.getMemberByMemberId(loginRequest.getMemberId()).orElseThrow(()-> new NotExistMemberException("존재하지 않는 회원입니다."));
+        return new LoginResponse(member.getMemberId(), member.getMemberPassword());
+    }
 }
