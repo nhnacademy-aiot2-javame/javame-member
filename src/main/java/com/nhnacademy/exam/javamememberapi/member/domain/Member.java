@@ -1,5 +1,6 @@
 package com.nhnacademy.exam.javamememberapi.member.domain;
 
+import com.nhnacademy.exam.javamememberapi.role.domain.Role;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -60,6 +61,9 @@ public class Member {
     @Comment("탈퇴일자")
     private LocalDateTime memberWithdrawalAt;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "role_id", nullable = false)
+    private Role role;
 
     private Member(String memberId, String memberPassword, String memberName,
                     String memberEmail,  String memberMobile, String memberSex){
