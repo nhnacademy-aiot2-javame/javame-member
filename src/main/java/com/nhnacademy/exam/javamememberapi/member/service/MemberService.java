@@ -21,4 +21,6 @@ public interface MemberService {
     void deleteMember(Long memberNo);
 
     LoginResponse getLoginInfo(LoginRequest loginRequest);
+
+    LoginResponse getLoginInfo(String memberId);
 }

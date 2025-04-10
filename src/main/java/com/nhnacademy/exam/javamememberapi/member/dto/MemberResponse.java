@@ -16,12 +16,14 @@ public class MemberResponse {
 
     private final String memberSex;
 
+    private final String roleId;
 
-    public MemberResponse(Long memberNo, String memberId, String memberName, String memberEmail, String memberSex) {
+    public MemberResponse(Long memberNo, String memberId, String memberName, String memberEmail, String memberSex, String roleId) {
         this.memberNo = memberNo;
         this.memberId = memberId;
         this.memberName = memberName;
         this.memberEmail = memberEmail;
         this.memberSex = memberSex;
+        this.roleId = roleId;
     }
 }

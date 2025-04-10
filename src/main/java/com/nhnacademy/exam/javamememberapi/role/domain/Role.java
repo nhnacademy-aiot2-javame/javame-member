@@ -28,7 +28,11 @@ public class Role {
         this.roleDescription = roleDescription;
     }
 
-    public Role() {
+    public Role() {}
+
+    public void updateRole(String roleName, String roleDescription){
+        this.roleName = roleDescription;
+        this.roleDescription = roleDescription;
     }
 
     public String getRoleId() {

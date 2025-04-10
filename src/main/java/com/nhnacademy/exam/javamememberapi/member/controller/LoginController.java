@@ -6,6 +6,7 @@ import com.nhnacademy.exam.javamememberapi.member.dto.MemberResponse;
 import com.nhnacademy.exam.javamememberapi.member.service.MemberService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -26,6 +27,10 @@ public class LoginController {
         return ResponseEntity.ok(loginResponse);
     }
 
-
-
+    @GetMapping("/{member-id}")
+    public ResponseEntity<LoginResponse> getMember(@PathVariable("member-id")String memberId){
+//        LoginResponse loginResponse =memberService.getMemberByMemberId(memberId);
+//        return ResponseEntity.ok(loginResponse);
+        return  null;
+    }
 }

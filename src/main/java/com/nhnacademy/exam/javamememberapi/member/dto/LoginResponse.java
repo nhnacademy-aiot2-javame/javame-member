@@ -5,10 +5,13 @@ public class LoginResponse {
 
     private final String memberPassword;
 
+    private final String roleId;
 
-    public LoginResponse(String memberId, String memberPassword) {
+
+    public LoginResponse(String memberId, String memberPassword, String roleId) {
         this.memberId = memberId;
         this.memberPassword = memberPassword;
+        this.roleId = roleId;
     }
 
     public String getMemberId() {
@@ -17,5 +20,9 @@ public class LoginResponse {
 
     public String getMemberPassword() {
         return memberPassword;
+    }
+
+    public String getRoleId() {
+        return roleId;
     }
 }

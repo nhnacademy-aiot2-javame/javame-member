@@ -6,9 +6,8 @@ import com.nhnacademy.exam.javamememberapi.member.domain.Member;
 import com.nhnacademy.exam.javamememberapi.member.dto.*;
 import com.nhnacademy.exam.javamememberapi.member.repository.MemberRepository;
 import com.nhnacademy.exam.javamememberapi.member.service.MemberService;
+import com.nhnacademy.exam.javamememberapi.role.domain.Role;
 import jakarta.transaction.Transactional;
-import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -29,29 +28,22 @@ public class MemberServiceImpl implements MemberService {
         if(memberRepository.existsMemberByMemberId(memberRegisterRequest.getMemberId())){
             throw new AlreadyExistException("이미 존재하는 회원입니다.");
         }
+        Role role = new Role("ROLE_ADMIN", "ADMIN", "어드민 입니다.");
         Member member = Member.ofNewMember(memberRegisterRequest.getMemberId(), memberRegisterRequest.getMemberPassword(), memberRegisterRequest.getMemberName(),
-                memberRegisterRequest.getMemberEmail(), memberRegisterRequest.getMemberMobile(), memberRegisterRequest.getMemberSex());
+                memberRegisterRequest.getMemberEmail(), memberRegisterRequest.getMemberMobile(), memberRegisterRequest.getMemberSex(), role);
+        Member saveMember = memberRepository.save(member);
 
-        memberRepository.save(member);
-
-        MemberResponse memberResponse = new MemberResponse(member.getMemberNo(), member.getMemberId(), member.getMemberName(), member.getMemberEmail(), member.getMemberSex());
-        return memberResponse;
+        return memberResponseMapper(saveMember);
     }
 
     @Override
     public MemberResponse getMemberByMemberId(String memberId) {
         Optional<Member> memberOptional = memberRepository.getMemberByMemberId(memberId);
-        if (!memberOptional.isPresent()){
+        if (memberOptional.isEmpty()){
             throw new NotExistMemberException("존재하지 않는 회원입니다.");
         }
         Member member = memberOptional.get();
-        return new MemberResponse(
-                member.getMemberNo(),
-                member.getMemberId(),
-                member.getMemberName(),
-                member.getMemberEmail(),
-                member.getMemberSex()
-        );
+        return memberResponseMapper(member);
     }
 
     @Override
@@ -61,13 +53,7 @@ public class MemberServiceImpl implements MemberService {
             throw new NotExistMemberException("존재하지 않는 회원입니다.");
         }
         Member member = memberOptional.get();
-        return new MemberResponse(
-                    member.getMemberNo(),
-                    member.getMemberId(),
-                    member.getMemberName(),
-                    member.getMemberEmail(),
-                    member.getMemberSex()
-        );
+        return memberResponseMapper(member);
     }
 
 
@@ -75,18 +61,12 @@ public class MemberServiceImpl implements MemberService {
     @Override
     public MemberResponse updateMember(String memberId, MemberUpdateRequest memberUpdateRequest) {
         Optional<Member> memberOptional = memberRepository.getMemberByMemberId(memberId);
-        if (!memberOptional.isPresent()){
+        if (memberOptional.isEmpty()){
             throw new NotExistMemberException("존재하지 않는 회원입니다.");
         }
         Member member = memberOptional.get();
         member.update(member.getMemberPassword());
-        return new MemberResponse(
-                member.getMemberNo(),
-                member.getMemberId(),
-                member.getMemberName(),
-                member.getMemberEmail(),
-                member.getMemberSex()
-        );
+        return memberResponseMapper(member);
     }
 
     @Override
@@ -105,6 +85,27 @@ public class MemberServiceImpl implements MemberService {
     @Override
     public LoginResponse getLoginInfo(LoginRequest loginRequest) {
         Member member = memberRepository.getMemberByMemberId(loginRequest.getMemberId()).orElseThrow(()-> new NotExistMemberException("존재하지 않는 회원입니다."));
-        return new LoginResponse(member.getMemberId(), member.getMemberPassword());
+        return new LoginResponse(member.getMemberId(), member.getMemberPassword(), member.getRole().getRoleId());
+    }
+
+    @Override
+    public LoginResponse getLoginInfo(String memberId){
+        Optional<Member> memberOptional = memberRepository.getMemberByMemberId(memberId);
+        if (memberOptional.isEmpty()){
+            throw new NotExistMemberException("존재하지 않는 회원입니다.");
+        }
+        Member member = memberOptional.get();
+        return new LoginResponse(member.getMemberId(), member.getMemberPassword(), member.getRole().getRoleId());
+    }
+
+    private MemberResponse memberResponseMapper(Member member){
+        return new MemberResponse(
+                member.getMemberNo(),
+                member.getMemberId(),
+                member.getMemberName(),
+                member.getMemberEmail(),
+                member.getMemberSex(),
+                member.getRole().getRoleId()
+        );
     }
 }
