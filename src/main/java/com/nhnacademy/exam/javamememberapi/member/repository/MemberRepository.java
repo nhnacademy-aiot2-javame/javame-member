@@ -10,9 +10,9 @@ public interface MemberRepository extends JpaRepository<Member, Long > {
 
     Boolean existsMemberByMemberId(String memberId);
 
-    Member getMemberByMemberId(String memberId);
+    Optional<Member> getMemberByMemberId(String memberId);
 
-    Member getMemberByMemberNo(Long memberNo);
+    Optional<Member> getMemberByMemberNo(Long memberNo);
 
     Boolean existsMemberByMemberNo(Long memberId);
 }

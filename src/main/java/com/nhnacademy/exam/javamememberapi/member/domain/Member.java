@@ -37,7 +37,7 @@ public class Member {
     private String memberBirth;
 
 //    @Column(name = "member_email", length = 30, nullable = false)
-    @Comment("이메일")
+    @Comment("이메일-비밀번호 찾기용")
     private String memberEmail;
 
 //    @Column(name = "member_mobile", unique = true, length = 13, nullable = false)

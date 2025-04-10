@@ -42,7 +42,11 @@ public class MemberServiceImpl implements MemberService {
 
     @Override
     public MemberResponse getMemberByMemberId(String memberId) {
-        Member member = memberRepository.getMemberByMemberId(memberId);
+        Optional<Member> memberOptional = memberRepository.getMemberByMemberId(memberId);
+        if (!memberOptional.isPresent()){
+            throw new NotExistMemberException("존재하지 않는 회원입니다.");
+        }
+        Member member = memberOptional.get();
         return new MemberResponse(
                 member.getMemberNo(),
                 member.getMemberId(),
@@ -54,7 +58,11 @@ public class MemberServiceImpl implements MemberService {
 
     @Override
     public MemberResponse getMemberByMemberNo(Long memberNo) {
-        Member member = memberRepository.getMemberByMemberNo(memberNo);
+        Optional<Member> memberOptional = memberRepository.getMemberByMemberNo(memberNo);
+        if (!memberOptional.isPresent()){
+            throw new NotExistMemberException("존재하지 않는 회원입니다.");
+        }
+        Member member = memberOptional.get();
         return new MemberResponse(
                     member.getMemberNo(),
                     member.getMemberId(),
@@ -68,7 +76,11 @@ public class MemberServiceImpl implements MemberService {
 
     @Override
     public MemberResponse updateMember(String memberId, MemberUpdateRequest memberUpdateRequest) {
-        Member member = memberRepository.getMemberByMemberId(memberId);
+        Optional<Member> memberOptional = memberRepository.getMemberByMemberId(memberId);
+        if (!memberOptional.isPresent()){
+            throw new NotExistMemberException("존재하지 않는 회원입니다.");
+        }
+        Member member = memberOptional.get();
         member.update(member.getMemberPassword());
         return new MemberResponse(
                 member.getMemberNo(),
@@ -84,8 +96,12 @@ public class MemberServiceImpl implements MemberService {
         if(!memberRepository.existsMemberByMemberNo(memberNo)){
         throw new NotExistMemberException("존재하지 않는 회원입니다.");
     }
-    Member deleteTarget = memberRepository.getMemberByMemberNo(memberNo);
-    memberRepository.delete(deleteTarget);
+    Optional<Member> deleteTarget = memberRepository.getMemberByMemberNo(memberNo);
+        if (!deleteTarget.isPresent()){
+            throw new NotExistMemberException("존재하지 않는 회원입니다.");
+        }
+        Member member = deleteTarget.get();
+    memberRepository.delete(member);
     }
 
 }
