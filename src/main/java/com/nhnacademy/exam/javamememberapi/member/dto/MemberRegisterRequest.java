@@ -20,20 +20,15 @@ public class MemberRegisterRequest {
     @Size(min = 2, max = 4, message = "이름은 2자 이상 4자 이하로 입력해 주세요.")
     private final String memberName;
 
-//    @NotBlank(message = "비밀번호는 필수 입력 항목입니다.")
-//    @Size(min = 10, max = 20,  message = "비밀번호는 10자 이상 20자 이하로 입력해주세요.")
-//    @Pattern(
-//            regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#$%^&*()_+\\-=\\[\\]{};':\"\\\\|,.<>\\/?]).{10,}$\n",
-//            message = "비밀번호는 최소 10자리 이상, 영어 대소문자 + 특수문자 포함"
-//            )
+    @NotBlank(message = "비밀번호는 필수 입력 항목입니다.")
     private final String memberPassword;
 
     @Email(message = "유효한 이메일 주소를 입력해 주세요")
     @NotBlank(message = "이메일은 필수 입력 항목입니다.")
     private final String memberEmail;
 
-//    @NotBlank(message = "생년월일은 필수 입력 항목입니다.")
-    private final String memberBirth;
+    @NotBlank(message = "생년월일은 필수 입력 항목입니다.")
+    private final LocalDate memberBirth;
 
     @NotBlank(message = "전화번호는 필수 입력 항목입니다.")
     @Pattern(
@@ -45,7 +40,7 @@ public class MemberRegisterRequest {
     @NotBlank(message = "성별은 필수 입력 항목입니다.")
     private final String memberSex;
 
-    public MemberRegisterRequest(String memberId, String memberName, String memberPassword, String memberEmail, String memberBirth, String memberMobile, String memberSex) {
+    public MemberRegisterRequest(String memberId, String memberName, String memberPassword, String memberEmail, LocalDate memberBirth, String memberMobile, String memberSex) {
         this.memberId = memberId;
         this.memberName = memberName;
         this.memberPassword = memberPassword;
@@ -71,7 +66,7 @@ public class MemberRegisterRequest {
         return memberEmail;
     }
 
-    public String getMemberBirth() {
+    public LocalDate getMemberBirth() {
         return memberBirth;
     }
 

@@ -2,7 +2,6 @@ package com.nhnacademy.exam.javamememberapi.member.controller;
 
 import com.nhnacademy.exam.javamememberapi.member.dto.LoginRequest;
 import com.nhnacademy.exam.javamememberapi.member.dto.LoginResponse;
-import com.nhnacademy.exam.javamememberapi.member.dto.MemberResponse;
 import com.nhnacademy.exam.javamememberapi.member.service.MemberService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;

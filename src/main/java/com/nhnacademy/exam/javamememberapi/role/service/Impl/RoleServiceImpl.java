@@ -36,7 +36,7 @@ public class RoleServiceImpl implements RoleService {
 
     @Override
     public RoleResponse registerRole(RoleRegisterRequest roleRegisterRequest) {
-        Boolean isExist = roleRepository.findRoleByRoleId(roleRegisterRequest.getRoleId());
+        Boolean isExist = roleRepository.existsRoleByRoleId(roleRegisterRequest.getRoleId());
         if (isExist) {
             throw new AlreadyExistRoleException("해당 권한은 이미 존재합니다.");
         }
@@ -48,10 +48,9 @@ public class RoleServiceImpl implements RoleService {
         return roleResponseMapper(role);
     }
 
-
     @Override
     public RoleResponse getRole(String roleId) {
-        Optional<Role> optionalRole = roleRepository.getRoleByRoleId(roleId);
+        Optional<Role> optionalRole = roleRepository.findRoleByRoleId(roleId);
         if(!optionalRole.isPresent()){
             throw new NotExistRoleException("해당 권한이 존재하지 않습니다.");
         }
@@ -62,7 +61,7 @@ public class RoleServiceImpl implements RoleService {
 
     @Override
     public void deleteRole(String roleId) {
-        Optional<Role> optionalRole = roleRepository.getRoleByRoleId(roleId);
+        Optional<Role> optionalRole = roleRepository.findRoleByRoleId(roleId);
         if(optionalRole.isEmpty()){
             throw new NotExistRoleException("해당 권한이 존재하지 않습니다.");
         }
@@ -73,10 +72,14 @@ public class RoleServiceImpl implements RoleService {
 
     @Override
     public RoleResponse updateRole(String roleId, RoleUpdateRequest roleUpdateRequest) {
-        Role role = roleRepository.findById(roleId).orElseThrow(()->new NotExistRoleException("Role이 없습니다."));
-//        role.updateRole(roleUpdateRequest.getRoleName(), roleUpdateRequest.get);
+        Optional<Role> optionalRole = roleRepository.findRoleByRoleId(roleId);
+        if(optionalRole.isEmpty()){
+            throw new NotExistRoleException("존재하지 않는 권한입니다.");
+        }
+        Role updateTarget = optionalRole.get();
+        roleRepository.save(updateTarget);
 
-        return null;
+        return roleResponseMapper(updateTarget);
     }
 
 

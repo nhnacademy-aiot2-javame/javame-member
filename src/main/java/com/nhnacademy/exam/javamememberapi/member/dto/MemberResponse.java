@@ -1,10 +1,9 @@
 package com.nhnacademy.exam.javamememberapi.member.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
 import lombok.ToString;
 
-@Getter
+import java.time.LocalDate;
+
 @ToString
 public class MemberResponse {
 
@@ -14,6 +13,8 @@ public class MemberResponse {
 
     private final String memberName;
 
+    private final LocalDate memberBirth;
+
     private final String memberEmail;
 
     private final String memberMobile;
@@ -22,13 +23,46 @@ public class MemberResponse {
 
     private final String roleId;
 
-    public MemberResponse(Long memberNo, String memberId, String memberName, String memberEmail, String memberMobile, String memberSex, String roleId) {
+    public MemberResponse(Long memberNo, String memberId, String memberName, LocalDate memberBirth, String memberEmail, String memberMobile, String memberSex, String roleId) {
         this.memberNo = memberNo;
         this.memberId = memberId;
         this.memberName = memberName;
+        this.memberBirth = memberBirth;
         this.memberEmail = memberEmail;
         this.memberMobile = memberMobile;
         this.memberSex = memberSex;
         this.roleId = roleId;
+    }
+
+    public Long getMemberNo() {
+        return memberNo;
+    }
+
+    public String getMemberId() {
+        return memberId;
+    }
+
+    public String getMemberName() {
+        return memberName;
+    }
+
+    public LocalDate getMemberBirth() {
+        return memberBirth;
+    }
+
+    public String getMemberEmail() {
+        return memberEmail;
+    }
+
+    public String getMemberMobile() {
+        return memberMobile;
+    }
+
+    public String getMemberSex() {
+        return memberSex;
+    }
+
+    public String getRoleId() {
+        return roleId;
     }
 }

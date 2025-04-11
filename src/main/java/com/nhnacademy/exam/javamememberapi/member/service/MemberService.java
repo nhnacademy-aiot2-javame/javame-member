@@ -6,10 +6,10 @@ import java.lang.reflect.Member;
 
 public interface MemberService {
 
-//    create
+    //    create
     MemberResponse registerMember(MemberRegisterRequest memberRegisterRequest);
 
-//    read
+    //    read
     MemberResponse getMemberByMemberId(String memberId);
 
     MemberResponse getMemberByMemberNo(Long memberNo);
@@ -18,7 +18,7 @@ public interface MemberService {
     MemberResponse updateMember(String memberId, MemberUpdateRequest memberUpdateRequest);
 
     // delete
-    void deleteMember(Long memberNo);
+    public void deleteMember(String memberId);
 
     LoginResponse getLoginInfo(LoginRequest loginRequest);
 
