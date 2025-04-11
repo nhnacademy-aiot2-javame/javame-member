@@ -18,7 +18,7 @@ public class MemberUpdateRequest {
     private final String memberPassword;
 
 
-    public MemberUpdateRequest(String memberPassword, String memberId) {
+    public MemberUpdateRequest(String memberPassword) {
         this.memberPassword = memberPassword;
     }
 

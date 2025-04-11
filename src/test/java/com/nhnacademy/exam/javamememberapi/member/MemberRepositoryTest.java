@@ -2,6 +2,8 @@ package com.nhnacademy.exam.javamememberapi.member;
 
 import com.nhnacademy.exam.javamememberapi.member.domain.Member;
 import com.nhnacademy.exam.javamememberapi.member.repository.MemberRepository;
+import com.nhnacademy.exam.javamememberapi.role.domain.Role;
+import com.nhnacademy.exam.javamememberapi.role.repository.RoleRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -24,9 +26,17 @@ public class MemberRepositoryTest {
     @Autowired
     MemberRepository memberRepository;
 
+    @Autowired
+    RoleRepository roleRepository;
+
+    Role role;
+
     @BeforeEach
     void setUp(){
         //테스트 메서드가 실행 될 때마다 멤버를 5명 미리 등록합니다.
+        role = new Role("ROLE_ADMIN", "ADMIN", "Description");
+        roleRepository.save(role);
+
         for (int i=1; i<6; i++){
             String memberId = "member%s".formatted(i);
             String memberPassword = "password%s".formatted(i);
@@ -41,8 +51,9 @@ public class MemberRepositoryTest {
                 memberSex ="M";
 
             }
-            Member member = Member.ofNewMember(memberId, memberPassword, memberName, memberEmail, memberMobile, memberSex);
+            Member member = Member.ofNewMember(memberId, memberPassword, memberName, memberEmail, memberMobile, memberSex,role);
             Member memberSaved = memberRepository.save(member);
+
         }
     }
 
@@ -55,7 +66,8 @@ public class MemberRepositoryTest {
                 "홍길동",
                 "nhnacademy@naver.com",
                 "010-1234-5678",
-                "M"
+                "M",
+                role
         );
         memberRepository.save(member);
 
@@ -66,7 +78,7 @@ public class MemberRepositoryTest {
         Assertions.assertAll(
                 ()->Assertions.assertTrue(Objects.nonNull(findMember.getMemberNo())),
                 ()->Assertions.assertEquals("javame", findMember.getMemberId()),
-                ()->Assertions.assertEquals("Qwer1234!@$#", findMember.getMemberPassword()),
+                ()->Assertions.assertEquals("Qwer1234!@#$", findMember.getMemberPassword()),
                 ()->Assertions.assertEquals("nhnacademy@naver.com", findMember.getMemberEmail()),
                 ()->Assertions.assertEquals("010-1234-5678", findMember.getMemberMobile()),
                 ()->Assertions.assertEquals("M", findMember.getMemberSex())
@@ -77,50 +89,59 @@ public class MemberRepositoryTest {
     @Test
     @DisplayName("멤버 아이디로 멤버 존재여부 체크")
     void existsMemberByMemberId() {
-        Boolean isExist = memberRepository.existsMemberByMemberId("member2");
-        Assertions.assertTrue(isExist);
-    }
-
-    @Test
-    @DisplayName("멤버 아이디로 멤버 가져오기")
-    void getMemberByMemberId(){
-        Optional<Member> optionalMember = memberRepository.getMemberByMemberId("member2");
+        Optional<Member> optionalMember = memberRepository.findByMemberId("member1");
         Assertions.assertTrue(optionalMember.isPresent());
+
+        Member findMember = optionalMember.get();
         Assertions.assertAll(
-                ()-> Assertions.assertEquals("member2", optionalMember.get().getMemberId()),
-                ()-> Assertions.assertEquals("password2", optionalMember.get().getMemberPassword()),
-                ()-> Assertions.assertEquals("memberName2", optionalMember.get().getMemberName()),
-                ()-> Assertions.assertEquals("member2@naver.com", optionalMember.get().getMemberEmail()),
-                ()-> Assertions.assertEquals("010-1111-2222", optionalMember.get().getMemberMobile()),
-                ()-> Assertions.assertEquals("F", optionalMember.get().getMemberSex())
+                ()->Assertions.assertTrue(Objects.nonNull(findMember.getMemberNo())),
+                ()->Assertions.assertEquals("member1", findMember.getMemberId()),
+                ()->Assertions.assertEquals("password1", findMember.getMemberPassword()),
+                ()->Assertions.assertEquals("member1@naver.com", findMember.getMemberEmail()),
+                ()->Assertions.assertEquals("010-1111-1111", findMember.getMemberMobile()),
+                ()->Assertions.assertEquals("M", findMember.getMemberSex())
         );
-
-
     }
-
 
     @Test
     @DisplayName("회원번호로 멤버 가져오기")
     void getMemberByMemberNo(){
         Optional<Member> optionalMember = memberRepository.getMemberByMemberNo(1L);
         Assertions.assertTrue(optionalMember.isPresent());
-        Assertions.assertAll(
 
-                () -> Assertions.assertEquals("member2", optionalMember.get().getMemberId()),
-                ()-> Assertions.assertEquals("password2", optionalMember.get().getMemberPassword()),
-                ()-> Assertions.assertEquals("memberName2", optionalMember.get().getMemberName()),
-                ()-> Assertions.assertEquals("member2@naver.com", optionalMember.get().getMemberEmail()),
-                ()-> Assertions.assertEquals("010-1111-2222", optionalMember.get().getMemberMobile()),
-                ()-> Assertions.assertEquals("F", optionalMember.get().getMemberSex()
-                ));
+        Member findMember = optionalMember.get();
+        Assertions.assertAll(
+                ()->Assertions.assertTrue(Objects.nonNull(findMember.getMemberNo())),
+                ()->Assertions.assertEquals("member1", findMember.getMemberId()),
+                ()->Assertions.assertEquals("password1", findMember.getMemberPassword()),
+                ()->Assertions.assertEquals("member1@naver.com", findMember.getMemberEmail()),
+                ()->Assertions.assertEquals("010-1111-1111", findMember.getMemberMobile()),
+                ()->Assertions.assertEquals("M", findMember.getMemberSex())
+        );
     }
 
     @Test
-    @DisplayName("회원번호로 멤버 존재여부 확인")
-    void existsMemberByMemberNo(){
-//        Boolean isExist = memberRepository.existsMemberByMemberNo(memberNos.get(3));
-//        Assertions.assertTrue(isExist);
+    @DisplayName("멤버 업데이트(비밀번호 변경)")
+    void updateMember(){
+        Optional<Member> optionalMember = memberRepository.findByMemberId("member2");
+        Assertions.assertTrue(optionalMember.isPresent());
+        Member member = optionalMember.get();
+        member.update("Qwer1234!@#$");
 
+        Optional<Member> findOptionalMember = memberRepository.findByMemberId("member2");
+        Assertions.assertTrue(findOptionalMember.isPresent());
+        Member findMember = findOptionalMember.get();
+        Assertions.assertEquals("Qwer1234!@#$", findMember.getMemberPassword());
     }
 
+    @Test
+    @DisplayName("멤버 삭제")
+    void deleteMember(){
+        Optional<Member> optionalMember = memberRepository.findByMemberId("member3");
+        Assertions.assertTrue(optionalMember.isPresent());
+
+        memberRepository.delete(optionalMember.get());
+        Optional<Member> findOptionalMember = memberRepository.findByMemberId("member3");
+        Assertions.assertTrue(findOptionalMember.isEmpty());
+    }
 }
