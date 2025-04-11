@@ -6,7 +6,9 @@ import com.nhnacademy.exam.javamememberapi.member.domain.Member;
 import com.nhnacademy.exam.javamememberapi.member.dto.*;
 import com.nhnacademy.exam.javamememberapi.member.repository.MemberRepository;
 import com.nhnacademy.exam.javamememberapi.member.service.MemberService;
+import com.nhnacademy.exam.javamememberapi.role.common.NotExistRoleException;
 import com.nhnacademy.exam.javamememberapi.role.domain.Role;
+import com.nhnacademy.exam.javamememberapi.role.repository.RoleRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
@@ -17,9 +19,11 @@ import java.util.Optional;
 public class MemberServiceImpl implements MemberService {
 
     private final MemberRepository memberRepository;
+    private final RoleRepository roleRepository;
 
-    public MemberServiceImpl(MemberRepository memberRepository) {
+    public MemberServiceImpl(MemberRepository memberRepository, RoleRepository roleRepository) {
         this.memberRepository = memberRepository;
+        this.roleRepository = roleRepository;
     }
 
     @Override
@@ -29,7 +33,12 @@ public class MemberServiceImpl implements MemberService {
         if(existMember){
             throw new AlreadyExistException("이미 존재하는 회원입니다.");
         }
+        // todo#1 Role은 DB에서 받아와야함
+//        Role role = roleRepository.findRoleByRoleId("ROLE_MEMBER").orElseThrow(
+//                ()->new NotExistRoleException("role이 존재하지 않습니다.")
+//        );
         Role role = new Role("ROLE_ADMIN", "ADMIN", "어드민 입니다.");
+
         Member member = Member.ofNewMember(
                 memberRegisterRequest.getMemberId(),
                 memberRegisterRequest.getMemberPassword(),

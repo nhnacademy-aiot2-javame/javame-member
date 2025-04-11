@@ -27,7 +27,7 @@ public class MemberRegisterRequest {
     @NotBlank(message = "이메일은 필수 입력 항목입니다.")
     private final String memberEmail;
 
-    @NotBlank(message = "생년월일은 필수 입력 항목입니다.")
+    @NotNull(message = "생년월일은 필수 입력 항목입니다.")
     private final LocalDate memberBirth;
 
     @NotBlank(message = "전화번호는 필수 입력 항목입니다.")
