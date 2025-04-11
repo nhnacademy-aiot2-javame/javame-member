@@ -33,6 +33,7 @@ class RoleTest {
 
         Role findRole = entityManager.find(Role.class, role.getRoleId());
         Assertions.assertNotNull(findRole);
+
         Assertions.assertAll(
                 ()->Assertions.assertEquals("ROLE_OWNER", findRole.getRoleId()),
                 ()->Assertions.assertEquals("OWNER", findRole.getRoleName()),
