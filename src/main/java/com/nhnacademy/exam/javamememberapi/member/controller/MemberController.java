@@ -10,7 +10,6 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping(value = {"/api/v1/members"})
 public class MemberController {
 
     private final MemberService memberService;
