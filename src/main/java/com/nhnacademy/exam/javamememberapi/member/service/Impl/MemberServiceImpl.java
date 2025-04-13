@@ -7,6 +7,7 @@ import com.nhnacademy.exam.javamememberapi.member.dto.*;
 import com.nhnacademy.exam.javamememberapi.member.repository.MemberRepository;
 import com.nhnacademy.exam.javamememberapi.member.service.MemberService;
 import com.nhnacademy.exam.javamememberapi.role.domain.Role;
+import com.nhnacademy.exam.javamememberapi.role.repository.RoleRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
@@ -17,9 +18,11 @@ import java.util.Optional;
 public class MemberServiceImpl implements MemberService {
 
     private final MemberRepository memberRepository;
+    private final RoleRepository roleRepository;
 
-    public MemberServiceImpl(MemberRepository memberRepository) {
+    public MemberServiceImpl(MemberRepository memberRepository, RoleRepository roleRepository) {
         this.memberRepository = memberRepository;
+        this.roleRepository = roleRepository;
     }
 
     @Override
@@ -29,7 +32,7 @@ public class MemberServiceImpl implements MemberService {
         if(existMember){
             throw new AlreadyExistException("이미 존재하는 회원입니다.");
         }
-        Role role = new Role("ROLE_ADMIN", "ADMIN", "어드민 입니다.");
+        Role role = roleRepository.getRoleByRoleId("ADMIN").orElseThrow(()-> new NotExistMemberException("존재하지 않는 권한입니다."));
         Member member = Member.ofNewMember(memberRegisterRequest.getMemberId(), memberRegisterRequest.getMemberPassword(), memberRegisterRequest.getMemberName(),
                 memberRegisterRequest.getMemberEmail(), memberRegisterRequest.getMemberMobile(), memberRegisterRequest.getMemberSex(),role);
         Member saveMember = memberRepository.save(member);

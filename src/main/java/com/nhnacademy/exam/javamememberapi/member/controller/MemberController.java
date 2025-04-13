@@ -50,4 +50,5 @@ public class MemberController {
                 .status(HttpStatus.NO_CONTENT)
                 .build();
     }
+
 }
