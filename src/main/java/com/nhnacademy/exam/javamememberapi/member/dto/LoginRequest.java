@@ -1,27 +1,17 @@
 package com.nhnacademy.exam.javamememberapi.member.dto;
 
+import lombok.Getter;
 import lombok.Setter;
 
+@Getter
 @Setter
 public class LoginRequest {
 
-    private final String memberId;
+    private String id;
+    private String password;
 
-    private final String memberPassword;
-
-
-    public LoginRequest(String memberId, String memberPassword) {
-        this.memberId = memberId;
-        this.memberPassword = memberPassword;
+    public LoginRequest(String id, String password) {
+        this.id = id;
+        this.password = password;
     }
-
-    public String getMemberId() {
-        return memberId;
-    }
-
-    public String getMemberPassword() {
-        return memberPassword;
-    }
-
-
 }
