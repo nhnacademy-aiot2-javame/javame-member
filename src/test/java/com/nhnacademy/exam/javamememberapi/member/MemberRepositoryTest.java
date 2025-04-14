@@ -13,8 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.test.context.ActiveProfiles;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.time.LocalDate;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -34,6 +33,7 @@ public class MemberRepositoryTest {
     @BeforeEach
     void setUp(){
         //테스트 메서드가 실행 될 때마다 멤버를 5명 미리 등록합니다.
+        LocalDate date = LocalDate.of(2025,4,11);
         role = new Role("ROLE_ADMIN", "ADMIN", "Description");
         roleRepository.save(role);
 
@@ -51,7 +51,7 @@ public class MemberRepositoryTest {
                 memberSex ="M";
 
             }
-            Member member = Member.ofNewMember(memberId, memberPassword, memberName, memberEmail, memberMobile, memberSex,role);
+            Member member = Member.ofNewMember(memberId, memberPassword, memberName, date, memberEmail, memberMobile, memberSex,role);
             Member memberSaved = memberRepository.save(member);
 
         }
@@ -60,10 +60,12 @@ public class MemberRepositoryTest {
     @Test
     @DisplayName("멤버 저장")
     void saveMember(){
+        LocalDate date = LocalDate.of(2025,4,11);
         Member member = Member.ofNewMember(
                 "javame",
                 "Qwer1234!@#$",
                 "홍길동",
+                date,
                 "nhnacademy@naver.com",
                 "010-1234-5678",
                 "M",
@@ -106,7 +108,7 @@ public class MemberRepositoryTest {
     @Test
     @DisplayName("회원번호로 멤버 가져오기")
     void getMemberByMemberNo(){
-        Optional<Member> optionalMember = memberRepository.getMemberByMemberNo(1L);
+        Optional<Member> optionalMember = memberRepository.getMemberByMemberId("member1");
         Assertions.assertTrue(optionalMember.isPresent());
 
         Member findMember = optionalMember.get();
@@ -123,15 +125,21 @@ public class MemberRepositoryTest {
     @Test
     @DisplayName("멤버 업데이트(비밀번호 변경)")
     void updateMember(){
+        LocalDate date = LocalDate.of(2025,4,12);
         Optional<Member> optionalMember = memberRepository.findByMemberId("member2");
         Assertions.assertTrue(optionalMember.isPresent());
         Member member = optionalMember.get();
-        member.update("Qwer1234!@#$");
+        member.update("passwordchange","이름변경", date, "change@naver.com", "010-2222-2222");
 
         Optional<Member> findOptionalMember = memberRepository.findByMemberId("member2");
         Assertions.assertTrue(findOptionalMember.isPresent());
         Member findMember = findOptionalMember.get();
-        Assertions.assertEquals("Qwer1234!@#$", findMember.getMemberPassword());
+        Assertions.assertAll(
+                ()->Assertions.assertEquals("passwordchange", findMember.getMemberPassword()),
+                ()->Assertions.assertEquals("이름변경", findMember.getMemberName()),
+                ()->Assertions.assertEquals("change@naver.com", findMember.getMemberEmail()),
+                ()->Assertions.assertEquals("010-2222-2222", findMember.getMemberMobile())
+        );
     }
 
     @Test

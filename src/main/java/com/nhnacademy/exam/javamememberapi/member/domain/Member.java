@@ -2,9 +2,6 @@ package com.nhnacademy.exam.javamememberapi.member.domain;
 
 import com.nhnacademy.exam.javamememberapi.role.domain.Role;
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.ToString;
 import org.hibernate.annotations.Comment;
 
@@ -35,7 +32,7 @@ public class Member {
 
     @Column(name = "member_birth", nullable = true)
     @Comment("생년월일")
-    private String memberBirth;
+    private LocalDate memberBirth;
 
     @Column(name = "member_email", length = 30, nullable = false)
     @Comment("이메일-비밀번호 찾기용")
@@ -65,11 +62,12 @@ public class Member {
     @JoinColumn(name = "role_id", nullable = false)
     private Role role;
 
-    private Member(String memberId, String memberPassword, String memberName,
-                    String memberEmail,  String memberMobile, String memberSex, Role role){
+    private Member(String memberId, String memberPassword, String memberName, LocalDate memberBirth,
+                   String memberEmail,  String memberMobile, String memberSex, Role role){
         this.memberId = memberId;
         this.memberPassword = memberPassword;
         this.memberName = memberName;
+        this.memberBirth = memberBirth;
         this.memberEmail = memberEmail;
         this.memberMobile = memberMobile;
         this.memberSex = memberSex;
@@ -78,8 +76,8 @@ public class Member {
 
     protected Member(){}
 
-    public static Member ofNewMember(String memberId, String memberPassword, String memberName, String memberEmail, String memberMobile, String memberSex, Role role){
-        return new Member(memberId, memberPassword, memberName, memberEmail, memberMobile, memberSex, role);
+    public static Member ofNewMember(String memberId, String memberPassword, String memberName, LocalDate memberBirth, String memberEmail, String memberMobile, String memberSex, Role role){
+        return new Member(memberId, memberPassword, memberName, memberBirth, memberEmail, memberMobile, memberSex, role);
     }
 
 
@@ -98,8 +96,12 @@ public class Member {
         this.memberWithdrawalAt = LocalDateTime.now();
     }
 
-    public void update(String memberPassword){
+    public void update(String memberPassword, String memberName, LocalDate memberBirth, String memberEmail, String memberMobile){
         this.memberPassword = memberPassword;
+        this.memberName = memberName;
+        this.memberBirth = memberBirth;
+        this.memberEmail = memberEmail;
+        this.memberMobile = memberMobile;
     }
 
 
@@ -119,7 +121,7 @@ public class Member {
         return memberName;
     }
 
-    public String getMemberBirth() {
+    public LocalDate getMemberBirth() {
         return memberBirth;
     }
 

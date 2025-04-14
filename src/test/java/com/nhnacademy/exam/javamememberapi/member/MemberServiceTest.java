@@ -21,6 +21,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.context.ActiveProfiles;
 
 import java.util.Optional;
+import java.time.LocalDate;
 
 @ActiveProfiles("test")
 @ExtendWith(MockitoExtension.class)
@@ -39,11 +40,13 @@ public class MemberServiceTest {
     Member member;
     @BeforeEach
     void setUp(){
+        LocalDate date = LocalDate.of(2025,4,11);
         role = new Role("ROLE_ADMIN", "ADMIN", "Description");
         member = Member.ofNewMember(
                 "javame",
                 "Qwer1234!@#$",
                 "홍길동",
+                date,
                 "nhnacademy@naver.com",
                 "010-1234-5678",
                 "M",
@@ -54,12 +57,13 @@ public class MemberServiceTest {
     @Test
     @DisplayName("Register Member Test")
     void registerMemberTest(){
+        LocalDate date = LocalDate.of(2025,4,11);
         MemberRegisterRequest memberRegisterRequest = new MemberRegisterRequest(
                 "javame",
                 "홍길동",
                 "Qwer1234!@#$",
                 "javame@naver.com",
-                "2025-04-10",
+                date,
                 "010-1234-5678",
                 "M"
         );
@@ -118,10 +122,25 @@ public class MemberServiceTest {
     @Test
     @DisplayName("updateMember Test")
     void updateMemberTest(){
-        MemberUpdateRequest memberUpdateRequest = new MemberUpdateRequest("1234Qwer!@#$");
+        LocalDate date = LocalDate.of(2025,4,12);
+        MemberUpdateRequest memberUpdateRequest = new MemberUpdateRequest("changeId", "changePassword", "change@naver.com", date, "010-1234-5678");
         Mockito.when(memberRepository.getMemberByMemberId(Mockito.anyString())).thenReturn(Optional.of(member));
 
         MemberResponse memberResponse = memberService.updateMember("javame",memberUpdateRequest);
+        Assertions.assertNotNull(memberResponse);
+        Assertions.assertAll(
+                ()->Assertions.assertEquals("javame", memberResponse.getMemberId()),
+                ()->Assertions.assertEquals("change@naver.com", memberResponse.getMemberEmail()),
+                ()->Assertions.assertEquals(date, memberResponse.getMemberBirth()),
+                ()->Assertions.assertEquals("010-1234-5678", memberResponse.getMemberMobile())
+        );
+    }
 
+    @Test
+    @DisplayName("delete Member Test")
+    void deleteMemberTest(){
+        Mockito.when(memberRepository.existsMemberByMemberId(Mockito.anyString())).thenReturn(true);
+        Mockito.when(memberRepository.getMemberByMemberId(Mockito.anyString())).thenReturn(Optional.of(member));
+        memberService.deleteMember("javame");
     }
 }
