@@ -1,9 +1,11 @@
 package com.nhnacademy.exam.javamememberapi.member;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.netflix.discovery.converters.Auto;
 import com.nhnacademy.exam.javamememberapi.member.controller.MemberController;
 import com.nhnacademy.exam.javamememberapi.member.domain.Member;
 import com.nhnacademy.exam.javamememberapi.member.dto.MemberRegisterRequest;
+import com.nhnacademy.exam.javamememberapi.member.dto.MemberResponse;
 import com.nhnacademy.exam.javamememberapi.member.service.MemberService;
 import com.nhnacademy.exam.javamememberapi.role.domain.Role;
 import org.junit.jupiter.api.BeforeEach;
@@ -20,6 +22,12 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.LocalDate;
 
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+
 @ExtendWith(MockitoExtension.class)
 @WebMvcTest(controllers = MemberController.class)
 class MemberControllerTest {
@@ -30,25 +38,61 @@ class MemberControllerTest {
     @MockitoBean
     MemberService memberService;
 
-    @MockitoBean
+    @Autowired
     ObjectMapper objectMapper;
 
     Role role;
+
     Member member;
+
+    MemberResponse memberResponse;
 
     @BeforeEach
     void setUp() {
-        role = new Role("ROLE_ADMIN", "ADMIN", "관리자");
-        member = Member.ofNewMember(
+        memberResponse = new MemberResponse(
+                1L,
                 "javame",
-                "password",
                 "홍길동",
-                LocalDate.of(2025, 4, 11),
-                "javame@naver.com",
+                LocalDate.of(2025,1,1),
+                "nhnacademy@naver.com",
                 "010-1234-5678",
                 "M",
-                role
+                "ROLE_ADMIN"
         );
     }
-    
+//어서와~~~ 테스트 처음이지?
+
+    @Test
+    @DisplayName("get")
+    void registerMemberTest() throws Exception {
+        Mockito.when(memberService.registerMember(Mockito.any())).thenReturn(memberResponse);
+        mockMvc
+                .perform(post("")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .content(
+                                """
+{
+    "memberId": "javame",
+    "memberName": "홍길동",
+    "memberPassword": "encoding",
+    "memberBirth": "2025-01-01",
+    "memberEmail": "nhnacademy@naver.com",
+    "memberMobile": "010-1234-5678",
+    "memberSex": "M"
+    }
+                                """
+                        ))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.memberId").value("javame"))
+                .andExpect(jsonPath("$.memberName").value("홍길동"))
+                .andExpect(jsonPath("$.memberBirth").value("2025-01-01"))
+                .andExpect(jsonPath("$.memberEmail").value("nhnacademy@naver.com"))
+                .andExpect(jsonPath("$.memberMobile").value("010-1234-5678"))
+                .andExpect(jsonPath("$.memberSex").value("M"))
+                .andExpect(jsonPath("$.roleId").value("ROLE_ADMIN"))
+                .andDo(print());
+    }
+
+
 }

@@ -38,7 +38,7 @@ public class MemberServiceImpl implements MemberService {
                 .orElseThrow(() -> new NotExistMemberException("기본 사용자 역할(ROLE_USER)을 찾을 수 없습니다.")); // 예외 메시지 명확화
         log.info(defaultRole.getRoleName());
         Member member = Member.ofNewMember(memberRegisterRequest.getMemberId(), memberRegisterRequest.getMemberPassword(), memberRegisterRequest.getMemberName(),
-                memberRegisterRequest.getMemberEmail(), memberRegisterRequest.getMemberMobile(), memberRegisterRequest.getMemberSex(),defaultRole);
+                memberRegisterRequest.getMemberBirth(),memberRegisterRequest.getMemberEmail(), memberRegisterRequest.getMemberMobile(), memberRegisterRequest.getMemberSex(),defaultRole);
         Member saveMember = memberRepository.save(member);
 
         return memberResponseMapper(saveMember);
@@ -73,17 +73,22 @@ public class MemberServiceImpl implements MemberService {
             throw new NotExistMemberException("존재하지 않는 회원입니다.");
         }
         Member member = memberOptional.get();
-        member.update(member.getMemberPassword());
+        member.update(
+                memberUpdateRequest.getMemberPassword(),
+                memberUpdateRequest.getMemberName(),
+                memberUpdateRequest.getMemberBirth(),
+                memberUpdateRequest.getMemberEmail(),
+                memberUpdateRequest.getMemberMobile());
         return memberResponseMapper(member);
     }
 
     @Override
-    public void deleteMember(Long memberNo) {
-        if(!memberRepository.existsMemberByMemberNo(memberNo)){
+    public void deleteMember(String memberId) {
+        if(!memberRepository.existsMemberByMemberId(memberId)){
             throw new NotExistMemberException("존재하지 않는 회원입니다.");
         }
-        Optional<Member> deleteTarget = memberRepository.getMemberByMemberNo(memberNo);
-        if (!deleteTarget.isPresent()){
+        Optional<Member> deleteTarget = memberRepository.getMemberByMemberId(memberId);
+        if (deleteTarget.isEmpty()){
             throw new NotExistMemberException("존재하지 않는 회원입니다.");
         }
         Member member = deleteTarget.get();
@@ -118,6 +123,7 @@ public class MemberServiceImpl implements MemberService {
                 member.getMemberNo(),
                 member.getMemberId(),
                 member.getMemberName(),
+                member.getMemberBirth(),
                 member.getMemberEmail(),
                 member.getMemberMobile(),
                 member.getMemberSex(),
