@@ -22,7 +22,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.LocalDate;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -94,5 +94,64 @@ class MemberControllerTest {
                 .andDo(print());
     }
 
+    @Test
+    @DisplayName("get member Test")
+    void getMemberTest() throws Exception{
+        Mockito.when(memberService.getMemberByMemberId(Mockito.anyString())).thenReturn(memberResponse);
+        mockMvc
+                .perform(get("/javame")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.memberId").value("javame"))
+                .andExpect(jsonPath("$.memberName").value("홍길동"))
+                .andExpect(jsonPath("$.memberBirth").value("2025-01-01"))
+                .andExpect(jsonPath("$.memberEmail").value("nhnacademy@naver.com"))
+                .andExpect(jsonPath("$.memberMobile").value("010-1234-5678"))
+                .andExpect(jsonPath("$.memberSex").value("M"))
+                .andExpect(jsonPath("$.roleId").value("ROLE_ADMIN"))
+                .andDo(print());
+
+    }
+
+    @Test
+    @DisplayName("update member Test")
+    void updateMemberTest() throws Exception{
+        Mockito.when(memberService.updateMember(Mockito.anyString(), Mockito.any())).thenReturn(memberResponse);
+        mockMvc
+                .perform(put("/javame")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(
+"""
+{
+  "memberName": "이순신",
+  "memberPassword": "changePassword",
+  "memberEmail": "nhnacademy@nhnacademy.com",
+  "memberBirth": "2022-05-06",
+  "memberMobile": "010-9999-9999"
+}
+"""
+                        ))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.memberId").value("javame"))
+                .andExpect(jsonPath("$.memberName").value("홍길동"))
+                .andExpect(jsonPath("$.memberBirth").value("2025-01-01"))
+                .andExpect(jsonPath("$.memberEmail").value("nhnacademy@naver.com"))
+                .andExpect(jsonPath("$.memberMobile").value("010-1234-5678"))
+                .andExpect(jsonPath("$.memberSex").value("M"))
+                .andExpect(jsonPath("$.roleId").value("ROLE_ADMIN"))
+                .andDo(print());
+    }
+
+    @Test
+    @DisplayName("Delete member Test")
+    void deleteMemberTest() throws Exception{
+        Mockito.doNothing().when(memberService).deleteMember(Mockito.anyString());
+        mockMvc
+                .perform(delete("/delete")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNoContent());
+    }
 
 }

@@ -1,5 +1,8 @@
 package com.nhnacademy.exam.javamememberapi.role.dto;
 
+import lombok.ToString;
+
+@ToString
 public class RoleResponse {
 
     private final String roleName;

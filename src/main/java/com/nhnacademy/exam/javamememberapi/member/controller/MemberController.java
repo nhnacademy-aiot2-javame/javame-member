@@ -24,14 +24,12 @@ public class MemberController {
         return ResponseEntity.status(HttpStatus.CREATED).body(memberResponse);
     }
 
-    @GetMapping("/{member-id}")
-
 //    형님 생일축하합니다 10월에 생일이시라는데 오늘 생일하세요 그냥
 //    축하드립니다. 만수무강하세요
 //    주식 성투하시고 원하는곳 취업하세요.
 //
 //    고맙다 건승해라 장원아
-
+    @GetMapping("/{member-id}")
     public ResponseEntity<MemberResponse> getMember(@PathVariable("member-id") String memberId){
         MemberResponse memberResponse = memberService.getMemberByMemberId(memberId);
         return ResponseEntity.ok(memberResponse);

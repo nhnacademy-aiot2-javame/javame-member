@@ -62,8 +62,8 @@ class RoleTest {
         Role foundRole = entityManager.find(Role.class, role.getRoleId());
         Assertions.assertAll(
                 ()->Assertions.assertEquals("ROLE_OWNER", foundRole.getRoleId()),
-                ()->Assertions.assertEquals("OWNER", foundRole.getRoleName()),
-                ()->Assertions.assertEquals("This is admin", foundRole.getRoleDescription())
+                ()->Assertions.assertEquals("role_change", foundRole.getRoleName()),
+                ()->Assertions.assertEquals("changed_roleDescription", foundRole.getRoleDescription())
         );
 
     }
@@ -73,6 +73,6 @@ class RoleTest {
     void deleteRole(){
         Role foundRole = entityManager.find(Role.class, role.getRoleId());
         entityManager.remove(foundRole);
-        Assertions.assertNull(foundRole);
+        Assertions.assertNull(entityManager.find(Role.class, role.getRoleId()));
     }
 }

@@ -1,9 +1,6 @@
 package com.nhnacademy.exam.javamememberapi.member.dto;
 
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Pattern;
-import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.*;
 
 import java.time.LocalDate;
 
@@ -21,7 +18,7 @@ public class MemberUpdateRequest {
     @NotBlank(message = "이메일은 필수 입력 항목입니다.")
     private final String memberEmail;
 
-    @NotBlank(message = "생년월일은 필수 입력 항목입니다.")
+    @NotNull(message = "생년월일은 필수 입력 항목입니다.")
     private final LocalDate memberBirth;
 
     @NotBlank(message = "전화번호는 필수 입력 항목입니다.")

@@ -19,19 +19,8 @@ public class RoleServiceImpl implements RoleService {
 
     private final RoleRepository roleRepository;
 
-
     public RoleServiceImpl(RoleRepository roleRepository) {
         this.roleRepository = roleRepository;
-    }
-
-
-
-    private RoleResponse roleResponseMapper(Role role){
-        return new RoleResponse(
-                role.getRoleName(),
-                role.getRoleId(),
-                role.getRoleDescription()
-                );
     }
 
     @Override
@@ -51,7 +40,7 @@ public class RoleServiceImpl implements RoleService {
     @Override
     public RoleResponse getRole(String roleId) {
         Optional<Role> optionalRole = roleRepository.findRoleByRoleId(roleId);
-        if(!optionalRole.isPresent()){
+        if(optionalRole.isEmpty()){
             throw new NotExistRoleException("해당 권한이 존재하지 않습니다.");
         }
         Role role = optionalRole.get();
@@ -77,11 +66,21 @@ public class RoleServiceImpl implements RoleService {
             throw new NotExistRoleException("존재하지 않는 권한입니다.");
         }
         Role updateTarget = optionalRole.get();
-        roleRepository.save(updateTarget);
+        updateTarget.updateRole(
+                roleUpdateRequest.getRoleName(),
+                roleUpdateRequest.getRoleDescription()
+        );
 
         return roleResponseMapper(updateTarget);
     }
 
+    private RoleResponse roleResponseMapper(Role role){
+        return new RoleResponse(
+                role.getRoleName(),
+                role.getRoleId(),
+                role.getRoleDescription()
+        );
+    }
 
 
 }
