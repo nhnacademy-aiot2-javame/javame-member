@@ -9,7 +9,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-@RestController("/api/v1/members")
+@RestController
+@RequestMapping("/api/v1/members")
 public class MemberController {
 
     private final MemberService memberService;
@@ -25,13 +26,6 @@ public class MemberController {
     }
 
     @GetMapping("/{member-id}")
-
-//    형님 생일축하합니다 10월에 생일이시라는데 오늘 생일하세요 그냥
-//    축하드립니다. 만수무강하세요
-//    주식 성투하시고 원하는곳 취업하세요.
-//
-//    고맙다 건승해라 장원아
-
     public ResponseEntity<MemberResponse> getMember(@PathVariable("member-id") String memberId){
         MemberResponse memberResponse = memberService.getMemberByMemberId(memberId);
         return ResponseEntity.ok(memberResponse);

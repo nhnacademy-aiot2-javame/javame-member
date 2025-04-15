@@ -34,7 +34,7 @@ public class MemberServiceImpl implements MemberService {
         if(existMember){
             throw new AlreadyExistException("이미 존재하는 회원입니다.");
         }
-        Role defaultRole = roleRepository.getRoleByRoleId("ROLE_USER") // <<<--- "ADMIN" 대신 "ROLE_USER" 사용
+        Role defaultRole = roleRepository.getRoleByRoleId("ROLE_USER")
                 .orElseThrow(() -> new NotExistMemberException("기본 사용자 역할(ROLE_USER)을 찾을 수 없습니다.")); // 예외 메시지 명확화
         log.info(defaultRole.getRoleName());
         Member member = Member.ofNewMember(memberRegisterRequest.getMemberId(), memberRegisterRequest.getMemberPassword(), memberRegisterRequest.getMemberName(),
