@@ -1,0 +1,19 @@
+package com.nhnacademy.member.repository;
+
+import com.nhnacademy.member.domain.Member;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+import java.util.Optional;
+
+public interface MemberRepository extends JpaRepository<Member, Long > {
+
+    Boolean existsMemberByMemberId(String memberId);
+
+    Optional<Member> getMemberByMemberId(String memberId);
+
+    Optional<Member> getMemberByMemberNo(Long memberNo);
+
+    Boolean existsMemberByMemberNo(Long memberId);
+
+    Optional<Member> findByMemberId(String memberId);
+}
