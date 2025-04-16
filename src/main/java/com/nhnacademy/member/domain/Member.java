@@ -1,12 +1,12 @@
 package com.nhnacademy.member.domain;
 
-
 import com.nhnacademy.company.domian.Company;
 import com.nhnacademy.role.domain.Role;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 import org.hibernate.annotations.Comment;
 
 import java.time.LocalDateTime;
@@ -19,6 +19,7 @@ import java.util.UUID;
 @Table(name = "members")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@ToString
 public class Member {
 
     /**
@@ -53,7 +54,7 @@ public class Member {
     /**
      * 회원 비밀번호.
      */
-    @Column(name = "member_password", length = 60, nullable = false) // 길이 60으로 변경
+    @Column(name = "member_password", length = 60, nullable = false)
     @Comment("비밀번호 (BCrypt 해시)")
     private String memberPassword;
 
@@ -117,7 +118,7 @@ public class Member {
      * @return 새로 생성된 Member 엔티티
      */
     public static Member ofNewMember(Company company, Role role, String memberEmail,
-                                     String memberPassword, String memberName) { // memberId 파라미터 제거
+                                     String memberPassword, String memberName) {
         if (company == null || role == null || memberEmail == null
                 || memberPassword == null || memberName == null) {
             throw new IllegalArgumentException("Member 생성에 필요한 인자가 null입니다.");
@@ -125,18 +126,70 @@ public class Member {
         String memberUuid = UUID.randomUUID().toString();
         return new Member(memberUuid, company, role, memberEmail, memberPassword, memberName);
     }
-    @Override
-    public String toString() {
-        return "Member{" +
-                "memberId='" + memberId + '\'' +
-                ", company=" + company +
-                ", role=" + role +
-                ", memberEmail='" + memberEmail + '\'' +
-                ", memberPassword='" + memberPassword + '\'' +
-                ", memberName='" + memberName + '\'' +
-                ", registeredAt=" + registeredAt +
-                ", lastLoginAt=" + lastLoginAt +
-                ", withdrawalAt=" + withdrawalAt +
-                '}';
+
+    /**
+     * 회원 정보를 수정합니다.
+     *
+     * @param memberName 수정할 회원 이름
+     */
+    public void updateMemberInfo(String memberName) {
+        if (memberName != null && !memberName.isBlank()) {
+            this.memberName = memberName;
+        }
+        // 필요시 다른 필드 업데이트 로직 추가
+    }
+
+    /**
+     * 회원의 비밀번호를 변경합니다.
+     *
+     * @param encodedPassword 새로 해싱된 비밀번호
+     */
+    public void changePassword(String encodedPassword) {
+        if (encodedPassword != null && encodedPassword.length() == 60) {
+            this.memberPassword = encodedPassword;
+        } else {
+            // 예외 처리 또는 로깅
+            throw new IllegalArgumentException("유효하지 않은 비밀번호 형식입니다.");
+        }
+    }
+
+    /**
+     * 회원의 역할을 변경합니다.
+     *
+     * @param newRole 변경할 새로운 역할
+     */
+    public void changeRole(Role newRole) {
+        if (newRole != null) {
+            this.role = newRole;
+        }
+    }
+
+    /**
+     * 마지막 로그인 시간을 현재 시간으로 업데이트합니다.
+     */
+    public void updateLastLoginTime() {
+        this.lastLoginAt = LocalDateTime.now();
+    }
+
+    /**
+     * 회원을 탈퇴 상태로 변경합니다.
+     */
+    public void withdraw() {
+        this.withdrawalAt = LocalDateTime.now();
+    }
+
+    /**
+     * 회원이 현재 활성 상태인지 확인합니다.
+     *
+     * @return 활성 상태 여부
+     */
+    public boolean isActive() {
+        return this.withdrawalAt == null;
+    }
+
+    @PrePersist
+    protected void onPrePersist() {
+        this.registeredAt = LocalDateTime.now();
     }
 }
+
