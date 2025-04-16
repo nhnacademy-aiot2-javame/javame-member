@@ -1,6 +1,8 @@
 package com.nhnacademy.member.common;
 
-public class NotExistMemberException extends RuntimeException {
+import com.nhnacademy.common.exception.ResourceNotFoundException;
+
+public class NotExistMemberException extends ResourceNotFoundException {
 
     public NotExistMemberException(String message) {
         super(message);

@@ -1,6 +1,8 @@
 package com.nhnacademy.role.common;
 
-public class NotExistRoleException extends RuntimeException{
+import com.nhnacademy.common.exception.ResourceNotFoundException;
+
+public class NotExistRoleException extends ResourceNotFoundException {
     public NotExistRoleException(String message) {
         super(message);
     }

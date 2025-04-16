@@ -1,6 +1,8 @@
 package com.nhnacademy.company.common;
 
-public class NotExistCompanyException extends RuntimeException {
+import com.nhnacademy.common.exception.ResourceNotFoundException;
+
+public class NotExistCompanyException extends ResourceNotFoundException {
 
     public NotExistCompanyException(String message) {
         super(message);
