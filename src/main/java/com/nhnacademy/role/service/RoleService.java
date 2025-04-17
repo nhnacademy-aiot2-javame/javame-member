@@ -1,8 +1,8 @@
 package com.nhnacademy.role.service;
 
-import com.nhnacademy.role.dto.RoleRegisterRequest;
-import com.nhnacademy.role.dto.RoleResponse;
-import com.nhnacademy.role.dto.RoleUpdateRequest;
+import com.nhnacademy.role.dto.request.RoleRegisterRequest;
+import com.nhnacademy.role.dto.response.RoleResponse;
+import com.nhnacademy.role.dto.request.RoleUpdateRequest;
 
 public interface RoleService {
 

@@ -3,7 +3,7 @@ package com.nhnacademy.member;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nhnacademy.member.controller.MemberController;
 import com.nhnacademy.member.domain.Member;
-import com.nhnacademy.member.dto.MemberResponse;
+import com.nhnacademy.member.dto.response.MemberResponse;
 import com.nhnacademy.member.service.MemberService;
 import com.nhnacademy.role.domain.Role;
 import org.junit.jupiter.api.BeforeEach;

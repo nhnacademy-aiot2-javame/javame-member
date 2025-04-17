@@ -1,8 +1,8 @@
 package com.nhnacademy.member.controller;
 
-import com.nhnacademy.member.dto.MemberRegisterRequest;
-import com.nhnacademy.member.dto.MemberResponse;
-import com.nhnacademy.member.dto.MemberUpdateRequest;
+import com.nhnacademy.member.dto.request.MemberRegisterRequest;
+import com.nhnacademy.member.dto.response.MemberResponse;
+import com.nhnacademy.member.dto.request.MemberUpdateRequest;
 import com.nhnacademy.member.service.MemberService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

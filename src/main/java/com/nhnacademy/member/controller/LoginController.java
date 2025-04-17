@@ -1,6 +1,6 @@
 package com.nhnacademy.member.controller;
 
-import com.nhnacademy.member.dto.LoginResponse;
+import com.nhnacademy.member.dto.response.LoginResponse;
 import com.nhnacademy.member.service.MemberService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
