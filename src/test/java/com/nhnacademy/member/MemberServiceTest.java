@@ -5,7 +5,7 @@ import com.nhnacademy.member.dto.request.MemberRegisterRequest;
 import com.nhnacademy.member.dto.response.MemberResponse;
 import com.nhnacademy.member.dto.request.MemberUpdateRequest;
 import com.nhnacademy.member.repository.MemberRepository;
-import com.nhnacademy.member.service.Impl.MemberServiceImpl;
+import com.nhnacademy.member.service.impl.MemberServiceImpl;
 import com.nhnacademy.role.domain.Role;
 import com.nhnacademy.role.repository.RoleRepository;
 import org.junit.jupiter.api.Assertions;

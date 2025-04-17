@@ -19,4 +19,5 @@ public class MemberRegisterRequest {
     private String memberName;
 
     private String companyDomain;
+
 }

@@ -48,6 +48,4 @@ public interface MemberRepository extends JpaRepository<Member, String> {
      * @return 해당 회사와 역할을 가진 회원 목록
      */
     List<Member> findByCompanyAndRole(Company company, Role role);
-
-
 }
