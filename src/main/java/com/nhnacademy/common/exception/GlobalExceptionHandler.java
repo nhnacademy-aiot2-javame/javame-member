@@ -2,7 +2,6 @@ package com.nhnacademy.common.exception;
 
 import com.nhnacademy.common.dto.ErrorResponse;
 import com.nhnacademy.company.common.AlreadyExistCompanyException;
-import com.nhnacademy.role.common.NotExistRoleException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
