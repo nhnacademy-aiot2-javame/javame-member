@@ -243,7 +243,6 @@ public class MemberServiceImpl implements MemberService {
                 member.getMemberName(),
                 companyDomain,
                 roleId
-                // registeredAt 필드가 MemberResponse DTO에 있다면 여기에 추가: , member.getRegisteredAt()
         );
     }
 }
