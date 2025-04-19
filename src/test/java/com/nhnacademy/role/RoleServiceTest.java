@@ -1,4 +1,4 @@
-package com.nhnacademy.role;
-
-public class RoleServiceTest {
-}
+//package com.nhnacademy.role;
+//
+//public class RoleServiceTest {
+//}
