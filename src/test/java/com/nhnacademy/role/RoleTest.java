@@ -1,6 +1,6 @@
-//package com.nhnacademy.exam.javamememberapi.role;
+//package com.nhnacademy.role;
 //
-//import com.nhnacademy.exam.javamememberapi.role.domain.Role;
+//import com.nhnacademy.role.domain.Role;
 //import org.junit.jupiter.api.Assertions;
 //import org.junit.jupiter.api.BeforeEach;
 //import org.junit.jupiter.api.DisplayName;
@@ -33,7 +33,6 @@
 //
 //        Role findRole = entityManager.find(Role.class, role.getRoleId());
 //        Assertions.assertNotNull(findRole);
-//
 //        Assertions.assertAll(
 //                ()->Assertions.assertEquals("ROLE_OWNER", findRole.getRoleId()),
 //                ()->Assertions.assertEquals("OWNER", findRole.getRoleName()),

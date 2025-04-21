@@ -1,8 +1,7 @@
-//package com.nhnacademy.exam.javamememberapi.member;
+//package com.nhnacademy.member;
 //
-//import com.nhnacademy.exam.javamememberapi.member.domain.Member;
-//import com.nhnacademy.exam.javamememberapi.role.domain.Role;
-//import lombok.extern.slf4j.Slf4j;
+//import com.nhnacademy.member.domain.Member;
+//import com.nhnacademy.role.domain.Role;
 //import org.junit.jupiter.api.Assertions;
 //import org.junit.jupiter.api.BeforeEach;
 //import org.junit.jupiter.api.DisplayName;
@@ -14,7 +13,7 @@
 //
 //import java.time.LocalDate;
 //
-//@Slf4j
+//
 //@ActiveProfiles("test")
 //@DataJpaTest
 //public class MemberTest {
@@ -23,6 +22,7 @@
 //    TestEntityManager entityManager;
 //
 //    Member member;
+//
 //    @BeforeEach
 //    void setUp(){
 //        LocalDate date = LocalDate.of(2025,4,11);
