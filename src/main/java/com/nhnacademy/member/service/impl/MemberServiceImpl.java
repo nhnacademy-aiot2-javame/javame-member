@@ -23,6 +23,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Objects;
+
 /**
  * MemberService 인터페이스의 구현 클래스입니다.
  * 회원 관련 주요 비즈니스 로직을 담당하며, 데이터베이스 트랜잭션을 관리합니다.
@@ -46,7 +48,6 @@ public class MemberServiceImpl implements MemberService {
     private final MemberRepository memberRepository;
     private final CompanyRepository companyRepository;
     private final RoleRepository roleRepository;
-    private final PasswordEncoder passwordEncoder;
 
     // application.yml 등 설정 파일에서 기본 사용자 역할 ID 주입
     @Value("${app.security.default-role-id:ROLE_USER}")
@@ -91,11 +92,8 @@ public class MemberServiceImpl implements MemberService {
                 });
         log.info("신규 멤버에게 역할 '{}' 할당 예정.", defaultUserRoleId);
 
-        // 비밀번호 해싱
-        String encodedPassword = passwordEncoder.encode(request.getMemberPassword());
-
         // Member 엔티티 생성 및 저장
-        Member newMember = Member.ofNewMember(company, userRole, request.getMemberEmail(), encodedPassword, request.getMemberName());
+        Member newMember = Member.ofNewMember(company, userRole, request.getMemberEmail(), request.getMemberPassword(), request.getMemberName());
         Member savedMember = memberRepository.save(newMember);
         log.info("회원 등록 성공: 이름 '{}', 이메일 '{}', ID '{}'", savedMember.getMemberName(), savedMember.getMemberEmail(), savedMember.getMemberId());
 
@@ -148,14 +146,13 @@ public class MemberServiceImpl implements MemberService {
         Member member = findMemberByIdOrThrow(memberId);
 
         // 현재 비밀번호 일치 확인
-        if (!passwordEncoder.matches(request.getCurrentPassword(), member.getMemberPassword())) {
+        if (!Objects.equals(request.getCurrentPassword(), member.getMemberPassword())) {
             log.warn("비밀번호 변경 실패: 현재 비밀번호 불일치. ID {}", memberId);
             throw new IllegalArgumentException("현재 비밀번호가 일치하지 않습니다.");
         }
 
         // 새 비밀번호 해싱 및 엔티티 업데이트
-        String encodedNewPassword = passwordEncoder.encode(request.getNewPassword());
-        member.changePassword(encodedNewPassword);
+        member.changePassword(request.getNewPassword());
         log.info("회원 비밀번호 변경 성공: ID {}", memberId);
     }
 

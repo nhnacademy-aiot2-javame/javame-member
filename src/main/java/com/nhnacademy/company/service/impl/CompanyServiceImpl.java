@@ -42,7 +42,6 @@ public class CompanyServiceImpl implements CompanyService {
     private final CompanyRepository companyRepository;
     private final MemberRepository memberRepository;
     private final RoleRepository roleRepository;
-    private final PasswordEncoder passwordEncoder;
 
     @Value("{app.security.owner-role-id:ROLE_OWNER}")
     private String ownerRoleId;
@@ -95,15 +94,13 @@ public class CompanyServiceImpl implements CompanyService {
                 });
         log.info("Owner에게 역할 '{}' 할당 예정.", ownerRoleId);
 
-        // Owner 회원 비밀번호 암호화
-        String encodedOwnerPassword = passwordEncoder.encode(request.getOwnerPassword());
 
         // 신규 Owner 회원 생성
         Member newOwner = Member.ofNewMember(
                 savedCompany,
                 ownerRole,
                 request.getCompanyEmail(),
-                encodedOwnerPassword,
+                request.getOwnerPassword(),
                 request.getOwnerName()
         );
         Member savedOwner = memberRepository.save(newOwner);

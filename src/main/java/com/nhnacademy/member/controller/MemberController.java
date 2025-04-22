@@ -11,7 +11,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -21,7 +20,7 @@ import org.springframework.web.bind.annotation.*;
  * 회원 가입, 조회, 수정, 탈퇴, 로그인 정보 제공 등의 API 엔드포인트를 제공합니다.
  * 모든 경로는 "/api/v1/members"를 기본으로 합니다.
  */
-@Controller
+@RestController
 @RequestMapping(value = "/api/v1/members", produces = MediaType.APPLICATION_JSON_VALUE)// 기본 경로 및 JSON 형태 응답 타입 설정
 @RequiredArgsConstructor
 public class MemberController {
