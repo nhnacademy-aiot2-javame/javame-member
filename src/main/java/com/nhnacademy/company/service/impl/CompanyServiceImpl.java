@@ -2,7 +2,9 @@ package com.nhnacademy.company.service.impl;
 
 import com.nhnacademy.company.common.AlreadyExistCompanyException;
 import com.nhnacademy.company.common.NotExistCompanyException;
+import com.nhnacademy.company.common.NotFoundCompanyByEmailException;
 import com.nhnacademy.company.domian.Company;
+import com.nhnacademy.company.dto.request.CompanyUpdateEmailRequest;
 import com.nhnacademy.company.dto.request.CompanyUpdateRequest;
 import com.nhnacademy.company.dto.request.CompanyWithOwnerRegisterRequest;
 import com.nhnacademy.company.dto.response.CompanyResponse;
@@ -56,7 +58,7 @@ public class CompanyServiceImpl implements CompanyService {
      *     <li>{@link Company#ofNewCompany(String, String, String, String, String)} (String, String, String, String, String)} (가정) 팩토리 메서드를 사용하여 {@code Company} 엔티티를 생성하고 저장합니다.</li>
      *     <li>설정된 {@code ownerRoleId}로 {@code Role} 엔티티를 조회합니다. 없으면 {@code NotExistRoleException} 발생.</li>
      *     <li>Owner의 비밀번호를 {@link PasswordEncoder}로 해싱합니다.</li>
-     *     <li>{@link Member#ofNewMember(Company, Role, String, String, String)} 팩토리 메서드를 사용하여 Owner {@code Member} 엔티티를 생성하고 저장합니다.</li>
+     *     <li>{@link Member#ofNewMember(Company, Role, String, String)} 팩토리 메서드를 사용하여 Owner {@code Member} 엔티티를 생성하고 저장합니다.</li>
      * </ol>
      * 모든 과정이 성공하면 등록된 회사 정보를 담은 {@link CompanyResponse}를 반환합니다.
      */
@@ -100,13 +102,12 @@ public class CompanyServiceImpl implements CompanyService {
                 savedCompany,
                 ownerRole,
                 request.getCompanyEmail(),
-                request.getOwnerPassword(),
-                request.getOwnerName()
+                request.getOwnerPassword()
         );
         Member savedOwner = memberRepository.save(newOwner);
 
-        log.info("Owner 멤버 등록 성공: 이름 '{}', 이메일 '{}', ID '{}'",
-                savedOwner.getMemberName(), savedOwner.getMemberEmail(), savedOwner.getMemberId());
+        log.info("Owner 멤버 등록 성공: 이메일 '{}', ID '{}'",
+               savedOwner.getMemberEmail(), savedOwner.getMemberId());
         return mapToCompanyResponse(savedCompany);
     }
 
@@ -129,7 +130,7 @@ public class CompanyServiceImpl implements CompanyService {
     /**
      * {@inheritDoc}
      * {@link #findCompanyByIdOrThrow(String)}를 통해 대상 회사를 조회한 후,
-     * {@link Company#updateDetails(String, String, String, String)} (가정) 메서드를 호출하여 엔티티 상태를 변경합니다.
+     * {@link Company#updateDetails(String, String, String)} (가정) 메서드를 호출하여 엔티티 상태를 변경합니다.
      * JPA 변경 감지(Dirty Checking)에 의해 데이터베이스 업데이트가 수행됩니다.
      * 대상 회사를 찾지 못하면 {@code NotExistCompanyException}이 발생합니다.
      */
@@ -139,10 +140,29 @@ public class CompanyServiceImpl implements CompanyService {
         Company company = findCompanyByIdOrThrow(companyDomain);
         company.updateDetails(
                 request.getCompanyName(),
-                request.getCompanyEmail(),
                 request.getCompanyMobile(),
                 request.getCompanyAddress()
         );
+        log.debug("회사 정보 수정 완료: 도메인 {}", companyDomain);
+
+        return mapToCompanyResponse(company);
+    }
+
+    /**
+     * {@inheritDoc}
+     * {@link #findCompanyByIdOrThrow(String)}를 통해 대상 회사를 조회한 후,
+     * {@link Company#updateDetails(String, String, String)} (가정) 메서드를 호출하여 엔티티 상태를 변경합니다.
+     * JPA 변경 감지(Dirty Checking)에 의해 데이터베이스 업데이트가 수행됩니다.
+     * 대상 회사를 찾지 못하면 {@code NotExistCompanyException}이 발생합니다.
+     */
+    @Override
+    public CompanyResponse updateCompanyEmail(String companyDomain, CompanyUpdateEmailRequest request) {
+        log.debug("회사 정보 수정 요청: 도메인 {}", companyDomain);
+        if(!companyRepository.existsByCompanyEmail(request.getCurrentEmail())){
+            throw new NotFoundCompanyByEmailException(request.getCurrentEmail());
+        }
+        Company company = findCompanyByIdOrThrow(companyDomain);
+        company.updateEmail(request.getNewEmail());
         log.debug("회사 정보 수정 완료: 도메인 {}", companyDomain);
 
         return mapToCompanyResponse(company);

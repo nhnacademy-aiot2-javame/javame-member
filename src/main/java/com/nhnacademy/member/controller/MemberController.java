@@ -3,7 +3,6 @@ package com.nhnacademy.member.controller;
 
 import com.nhnacademy.member.dto.request.MemberPasswordChangeRequest;
 import com.nhnacademy.member.dto.request.MemberRegisterRequest;
-import com.nhnacademy.member.dto.request.MemberUpdateRequest;
 import com.nhnacademy.member.dto.response.MemberLoginResponse;
 import com.nhnacademy.member.dto.response.MemberResponse;
 import com.nhnacademy.member.service.MemberService;
@@ -21,7 +20,7 @@ import org.springframework.web.bind.annotation.*;
  * 모든 경로는 "/api/v1/members"를 기본으로 합니다.
  */
 @RestController
-@RequestMapping(value = "/api/v1/members", produces = MediaType.APPLICATION_JSON_VALUE)// 기본 경로 및 JSON 형태 응답 타입 설정
+@RequestMapping(value = "/members", produces = MediaType.APPLICATION_JSON_VALUE)// 기본 경로 및 JSON 형태 응답 타입 설정
 @RequiredArgsConstructor
 public class MemberController {
 
@@ -54,21 +53,6 @@ public class MemberController {
         return ResponseEntity.ok(response);
     }
 
-    /**
-     * 주어진 회원 ID에 해당하는 회원의 정보(현재는 이름만)를 수정합니다.
-     * 성공 시 HTTP 상태 코드 200 (OK)과 수정된 회원 정보를 반환합니다.
-     *
-     * @param memberId 수정할 회원의 UUID (경로 변수)
-     * @param request  수정할 정보 DTO ({@link MemberUpdateRequest})
-     * @return 수정된 회원 정보 ({@link MemberResponse})와 상태 코드 200
-     */
-    @PutMapping("/{memberId}")
-    public ResponseEntity<MemberResponse> updateMember(
-            @PathVariable String memberId,
-            @Validated @RequestBody MemberUpdateRequest request) {
-        MemberResponse response = memberService.updateMember(memberId, request);
-        return ResponseEntity.ok(response);
-    }
 
     /**
      * 주어진 회원 ID에 해당하는 회원의 비밀번호를 변경합니다.
@@ -115,5 +99,4 @@ public class MemberController {
         MemberLoginResponse response = memberService.getLoginInfoByEmail(email);
         return ResponseEntity.ok(response);
     }
-
 }

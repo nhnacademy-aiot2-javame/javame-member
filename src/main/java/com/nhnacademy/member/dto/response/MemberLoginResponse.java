@@ -13,8 +13,23 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class MemberLoginResponse {
 
+    /**
+     * 회원 식별 아이디(UUID).
+     */
     private String memberId;
+
+    /**
+     * 회원 이메일.
+     */
     private String memberEmail;
+
+    /**
+     * 회원 비밀번호.
+     */
     private String memberPassword;
+
+    /**
+     * 권한 아이디.
+     */
     private String roleId;
 }

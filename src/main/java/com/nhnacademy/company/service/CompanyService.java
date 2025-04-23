@@ -1,6 +1,7 @@
 package com.nhnacademy.company.service;
 
 
+import com.nhnacademy.company.dto.request.CompanyUpdateEmailRequest;
 import com.nhnacademy.company.dto.request.CompanyUpdateRequest;
 import com.nhnacademy.company.dto.request.CompanyWithOwnerRegisterRequest;
 import com.nhnacademy.company.dto.response.CompanyResponse;
@@ -33,7 +34,7 @@ public interface CompanyService {
     CompanyResponse getCompanyByDomain(String companyDomain);
 
     /**
-     * 기존 회사의 정보(이름, 이메일, 연락처, 주소)를 수정합니다.
+     * 기존 회사의 정보(이름, 연락처, 주소)를 수정합니다.
      * 회사 도메인(PK)은 변경할 수 없습니다.
      *
      * @param companyDomain 수정할 회사의 고유 도메인
@@ -41,6 +42,17 @@ public interface CompanyService {
      * @return 정보가 수정된 후의 회사 정보 ({@link CompanyResponse})
      */
     CompanyResponse updateCompany(String companyDomain, CompanyUpdateRequest request);
+
+
+    /**
+     * 회사 대표 이메일이자 오너의 아이디값인 이메일을 수정합니다.
+     * 회사 도메인(PK)은 변경할 수 없습니다.
+     *
+     * @param companyDomain 수정할 회사의 고유 도메인
+     * @param request       수정할 정보가 담긴 {@link CompanyUpdateEmailRequest} DTO
+     * @return 정보가 수정된 후의 회사 정보 ({@link CompanyResponse})
+     */
+    CompanyResponse updateCompanyEmail(String companyDomain, CompanyUpdateEmailRequest request);
 
     /**
      * 회사를 비활성 상태로 변경합니다. (논리적 삭제/Soft Delete 개념)

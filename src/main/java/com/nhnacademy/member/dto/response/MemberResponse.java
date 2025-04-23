@@ -13,9 +13,23 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class MemberResponse {
 
-    private String memberId;       // 회원 UUID
-    private String memberEmail;    // 회원 이메일
-    private String memberName;     // 회원 이름
-    private String companyDomain;  // 소속 회사 도메인
-    private String roleId;         // 역할 ID (예: "ROLE_USER")
+    /**
+     * 회원 UUID.
+     */
+    private String memberId;
+
+    /**
+     * 회원 이메일.
+     */
+    private String memberEmail;
+
+    /**
+     * 소속 회사 도메인.
+     */
+    private String companyDomain;
+
+    /**
+     * 역할 ID (예: "ROLE_USER").
+     */
+    private String roleId;
 }

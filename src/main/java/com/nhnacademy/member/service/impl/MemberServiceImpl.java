@@ -8,7 +8,6 @@ import com.nhnacademy.member.common.NotExistMemberException;
 import com.nhnacademy.member.domain.Member;
 import com.nhnacademy.member.dto.request.MemberPasswordChangeRequest;
 import com.nhnacademy.member.dto.request.MemberRegisterRequest;
-import com.nhnacademy.member.dto.request.MemberUpdateRequest;
 import com.nhnacademy.member.dto.response.MemberLoginResponse;
 import com.nhnacademy.member.dto.response.MemberResponse;
 import com.nhnacademy.member.repository.MemberRepository;
@@ -93,9 +92,9 @@ public class MemberServiceImpl implements MemberService {
         log.info("신규 멤버에게 역할 '{}' 할당 예정.", defaultUserRoleId);
 
         // Member 엔티티 생성 및 저장
-        Member newMember = Member.ofNewMember(company, userRole, request.getMemberEmail(), request.getMemberPassword(), request.getMemberName());
+        Member newMember = Member.ofNewMember(company, userRole, request.getMemberEmail(), request.getMemberPassword());
         Member savedMember = memberRepository.save(newMember);
-        log.info("회원 등록 성공: 이름 '{}', 이메일 '{}', ID '{}'", savedMember.getMemberName(), savedMember.getMemberEmail(), savedMember.getMemberId());
+        log.info("회원 등록 성공: 이메일 '{}', ID '{}'", savedMember.getMemberEmail(), savedMember.getMemberId());
 
         // 응답 DTO 변환 후 반환
         return mapToMemberResponse(savedMember);
@@ -114,22 +113,6 @@ public class MemberServiceImpl implements MemberService {
         Member member = findMemberByIdOrThrow(memberId);
         log.debug("회원 정보 조회 성공: ID {}", memberId);
         return mapToMemberResponse(member);
-    }
-
-    /**
-     * {@inheritDoc}
-     * 현재는 회원 이름만 수정 가능하도록 구현되어 있습니다.
-     * {@link Member#updateMemberInfo(String)} 메서드를 호출하여 엔티티 상태를 변경하며,
-     * JPA 변경 감지(Dirty Checking)에 의해 데이터베이스에 반영됩니다.
-     * 대상 회원을 찾지 못하면 {@code NotExistMemberException}이 발생합니다.
-     */
-    @Override
-    public MemberResponse updateMember(String memberId, MemberUpdateRequest request) {
-        log.debug("회원 정보 수정 요청: ID {}", memberId);
-        Member member = findMemberByIdOrThrow(memberId);
-        member.updateMemberInfo(request.getMemberName());
-        log.info("회원 정보 수정 완료: ID {}", memberId);
-        return mapToMemberResponse(member); // 변경된 정보가 반영된 DTO 반환
     }
 
     /**
@@ -237,9 +220,16 @@ public class MemberServiceImpl implements MemberService {
         return new MemberResponse(
                 member.getMemberId(),
                 member.getMemberEmail(),
-                member.getMemberName(),
                 companyDomain,
                 roleId
         );
+    }
+
+    /**
+     *
+     * @param member 마지막 로그인 시간을 변경할 member
+     */
+    private void updateLoginAt(Member member){
+        member.updateLastLoginTime();
     }
 }

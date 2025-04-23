@@ -118,11 +118,10 @@ public class Company {
      * 회사의 상세 정보를 수정합니다.
      *
      * @param companyName    새로운 회사 이름
-     * @param companyEmail   새로운 회사 이메일
      * @param companyMobile  새로운 회사 연락처
      * @param companyAddress 새로운 회사 주소
      */
-    public void updateDetails(String companyName, String companyEmail,
+    public void updateDetails(String companyName,
                               String companyMobile, String companyAddress) {
         if (companyName != null && !companyName.isBlank()) {
             this.companyName = companyName;
@@ -133,6 +132,9 @@ public class Company {
         if (companyAddress != null && !companyAddress.isBlank()) {
             this.companyAddress = companyAddress;
         }
+    }
+
+    public void updateEmail(String companyEmail){
         this.companyEmail = companyEmail;
     }
 

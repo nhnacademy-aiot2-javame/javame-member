@@ -13,6 +13,13 @@ import java.util.Optional;
 public interface CompanyRepository extends JpaRepository<Company, String> {
 
     /**
+     *
+     * @param companyEmail 회사 대표 이메일
+     * @return boolean값
+     */
+    boolean existsByCompanyEmail(String companyEmail);
+
+    /**
      * 회사명으로 회사를 조회합니다.
      *
      * @param companyName 회사명

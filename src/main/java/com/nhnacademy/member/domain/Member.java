@@ -58,12 +58,6 @@ public class Member {
     @Comment("비밀번호 (BCrypt 해시)")
     private String memberPassword;
 
-    /**
-     * 회원 이름.
-     */
-    @Column(name = "member_name", length = 50, nullable = false)
-    @Comment("회원 이름")
-    private String memberName;
 
     /**
      * 회원 가입 일시.
@@ -86,6 +80,11 @@ public class Member {
     @Comment("탈퇴일시")
     private LocalDateTime withdrawalAt;
 
+    @PrePersist
+    protected void prePersist() {
+        this.registeredAt = LocalDateTime.now();
+    }
+
     /**
      * Member 엔티티의 비공개 생성자입니다.
      * 정적 팩토리 메서드(createMember)를 통해 객체를 생성해야 합니다.
@@ -95,15 +94,13 @@ public class Member {
      * @param role          회원 역할
      * @param memberEmail   회원 이메일
      * @param memberPassword 해싱된 비밀번호
-     * @param memberName    회원 이름
      */
-    public Member(String memberId, Company company, Role role, String memberEmail, String memberPassword, String memberName) {
+    public Member(String memberId, Company company, Role role, String memberEmail, String memberPassword) {
         this.memberId = memberId;
         this.company = company;
         this.role = role;
         this.memberEmail = memberEmail;
         this.memberPassword = memberPassword;
-        this.memberName = memberName;
     }
 
     /**
@@ -114,29 +111,16 @@ public class Member {
      * @param role          회원 역할
      * @param memberEmail   회원 이메일
      * @param memberPassword 해싱된 비밀번호
-     * @param memberName    회원 이름
      * @return 새로 생성된 Member 엔티티
      */
     public static Member ofNewMember(Company company, Role role, String memberEmail,
-                                     String memberPassword, String memberName) {
+                                     String memberPassword) {
         if (company == null || role == null || memberEmail == null
-                || memberPassword == null || memberName == null) {
+                || memberPassword == null) {
             throw new IllegalArgumentException("Member 생성에 필요한 인자가 null입니다.");
         }
         String memberUuid = UUID.randomUUID().toString();
-        return new Member(memberUuid, company, role, memberEmail, memberPassword, memberName);
-    }
-
-    /**
-     * 회원 정보를 수정합니다.
-     *
-     * @param memberName 수정할 회원 이름
-     */
-    public void updateMemberInfo(String memberName) {
-        if (memberName != null && !memberName.isBlank()) {
-            this.memberName = memberName;
-        }
-        // 필요시 다른 필드 업데이트 로직 추가
+        return new Member(memberUuid, company, role, memberEmail, memberPassword);
     }
 
     /**
@@ -185,11 +169,6 @@ public class Member {
      */
     public boolean isActive() {
         return this.withdrawalAt == null;
-    }
-
-    @PrePersist
-    protected void onPrePersist() {
-        this.registeredAt = LocalDateTime.now();
     }
 }
 

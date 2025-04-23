@@ -18,11 +18,6 @@ public class CompanyUpdateRequest {
     private String companyName;
 
     /**
-     * 변경할 회사의 새 이메일 (선택 사항).
-     */
-    private String companyEmail;
-
-    /**
      * 변경할 회사의 새 연락처.
      */
     private String companyMobile;

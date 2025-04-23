@@ -2,7 +2,6 @@ package com.nhnacademy.member.service;
 
 import com.nhnacademy.member.dto.request.MemberPasswordChangeRequest;
 import com.nhnacademy.member.dto.request.MemberRegisterRequest;
-import com.nhnacademy.member.dto.request.MemberUpdateRequest;
 import com.nhnacademy.member.dto.response.MemberLoginResponse;
 import com.nhnacademy.member.dto.response.MemberResponse;
 import com.nhnacademy.common.exception.ResourceAlreadyExistsException;
@@ -35,15 +34,6 @@ public interface MemberService {
      */
     MemberResponse getMemberById(String memberId);
 
-    /**
-     * 회원의 기본 정보(현재는 이름만 가능)를 수정합니다.
-     *
-     * @param memberId 수정할 회원의 고유 ID (UUID)
-     * @param request  수정할 정보 (새 이름)가 담긴 요청 DTO
-     * @return 정보가 수정된 후의 회원 정보 (비밀번호 제외)
-     * @throws ResourceNotFoundException 해당 ID를 가진 회원을 찾을 수 없을 경우
-     */
-    MemberResponse updateMember(String memberId, MemberUpdateRequest request);
 
     /**
      * 회원의 비밀번호를 변경합니다.

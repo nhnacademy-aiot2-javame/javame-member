@@ -12,12 +12,19 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class MemberRegisterRequest {
 
+    /**
+     * 회원 이메일(로그인시 id로 사용됩니다.)
+     */
     private String memberEmail;
 
+    /**
+     * 회원 비밀번호.
+     */
     private String memberPassword;
 
-    private String memberName;
-
+    /**
+     * 회사 도메인
+     */
     private String companyDomain;
 
 }

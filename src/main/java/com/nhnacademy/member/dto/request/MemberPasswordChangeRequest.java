@@ -12,7 +12,13 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class MemberPasswordChangeRequest {
 
+    /**
+     * 현재 비밀번호.
+     */
     private String currentPassword;
 
+    /**
+     * 새 비밀번호.
+     */
     private String newPassword;
 }
