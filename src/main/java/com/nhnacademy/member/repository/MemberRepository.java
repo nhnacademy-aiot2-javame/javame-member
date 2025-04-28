@@ -12,7 +12,7 @@ import java.util.Optional;
  * 회원(Member) 엔티티에 대한 데이터 액세스 작업을 위한 리포지토리 인터페이스입니다.
  * Spring Data JPA의 JpaRepository를 상속받아 기본적인 CRUD 기능을 제공받습니다.
  */
-public interface MemberRepository extends JpaRepository<Member, String> {
+public interface MemberRepository extends JpaRepository<Member, Long> {
 
     /**
      * 주어진 이메일 주소로 회원을 조회합니다.

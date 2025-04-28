@@ -1,4 +1,4 @@
-package com.nhnacademy.company.controller; // 패키지 경로 확인
+package com.nhnacademy; // 패키지 경로 확인
 
 import com.nhnacademy.company.dto.request.CompanyUpdateEmailRequest;
 import com.nhnacademy.company.dto.request.CompanyWithOwnerRegisterRequest;
@@ -6,7 +6,7 @@ import com.nhnacademy.company.dto.request.CompanyUpdateRequest;
 import com.nhnacademy.company.dto.response.CompanyResponse;
 import com.nhnacademy.company.service.CompanyService;
 
-import jakarta.ws.rs.Path;
+import com.nhnacademy.member.service.MemberService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -27,6 +27,7 @@ import java.util.List;
 public class CompanyController {
 
     private final CompanyService companyService;
+    private final MemberService memberService;
 
     /**
      * 신규 회사를 등록하고 동시에 첫 번째 관리자(Owner) 회원을 생성합니다.
@@ -128,4 +129,5 @@ public class CompanyController {
         companyService.activateCompany(companyDomain);
         return ResponseEntity.noContent().build();
     }
+
 }

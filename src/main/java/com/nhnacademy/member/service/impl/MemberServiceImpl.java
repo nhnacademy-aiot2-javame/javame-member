@@ -94,7 +94,7 @@ public class MemberServiceImpl implements MemberService {
         // Member 엔티티 생성 및 저장
         Member newMember = Member.ofNewMember(company, userRole, request.getMemberEmail(), request.getMemberPassword());
         Member savedMember = memberRepository.save(newMember);
-        log.info("회원 등록 성공: 이메일 '{}', ID '{}'", savedMember.getMemberEmail(), savedMember.getMemberId());
+        log.info("회원 등록 성공: 이메일 '{}', ID '{}'", savedMember.getMemberEmail(), savedMember.getMemberNo());
 
         // 응답 DTO 변환 후 반환
         return mapToMemberResponse(savedMember);
@@ -108,10 +108,21 @@ public class MemberServiceImpl implements MemberService {
      */
     @Override
     @Transactional(readOnly = true)
-    public MemberResponse getMemberById(String memberId) {
-        log.debug("회원 정보 조회 요청: ID {}", memberId);
-        Member member = findMemberByIdOrThrow(memberId);
-        log.debug("회원 정보 조회 성공: ID {}", memberId);
+    public MemberResponse getMemberById(Long memberNo) {
+        log.debug("회원 정보 조회 요청: ID {}", memberNo);
+        Member member = findMemberByIdOrThrow(memberNo);
+        log.debug("회원 정보 조회 성공: ID {}", memberNo);
+        return mapToMemberResponse(member);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public MemberResponse getMemberByEmail(String memberEmail) {
+        log.debug("회원 정보 조회 요청: email {}", memberEmail);
+        Member member = memberRepository.findByMemberEmail(memberEmail).orElseThrow(
+                                                                            ()-> new NotExistMemberException(
+                                                                                    String.format("%s로 회원을 찾지 못했습니다.", memberEmail)));
+        log.debug("회원 정보 조회 성공: email {}", memberEmail);
         return mapToMemberResponse(member);
     }
 
@@ -124,19 +135,19 @@ public class MemberServiceImpl implements MemberService {
      * 대상 회원을 찾지 못하면 {@code NotExistMemberException}이 발생합니다.
      */
     @Override
-    public void changeMemberPassword(String memberId, MemberPasswordChangeRequest request) {
-        log.debug("회원 비밀번호 변경 요청: ID {}", memberId);
-        Member member = findMemberByIdOrThrow(memberId);
+    public void changeMemberPassword(Long memberNo, MemberPasswordChangeRequest request) {
+        log.debug("회원 비밀번호 변경 요청: ID {}", memberNo);
+        Member member = findMemberByIdOrThrow(memberNo);
 
         // 현재 비밀번호 일치 확인
         if (!Objects.equals(request.getCurrentPassword(), member.getMemberPassword())) {
-            log.warn("비밀번호 변경 실패: 현재 비밀번호 불일치. ID {}", memberId);
+            log.warn("비밀번호 변경 실패: 현재 비밀번호 불일치. ID {}", memberNo);
             throw new IllegalArgumentException("현재 비밀번호가 일치하지 않습니다.");
         }
 
         // 새 비밀번호 해싱 및 엔티티 업데이트
         member.changePassword(request.getNewPassword());
-        log.info("회원 비밀번호 변경 성공: ID {}", memberId);
+        log.info("회원 비밀번호 변경 성공: ID {}", memberNo);
     }
 
     /**
@@ -147,11 +158,11 @@ public class MemberServiceImpl implements MemberService {
      * 대상 회원을 찾지 못하면 {@code NotExistMemberException}이 발생합니다.
      */
     @Override
-    public void deleteMember(String memberId) {
-        log.debug("회원 탈퇴 요청: ID {}", memberId);
-        Member member = findMemberByIdOrThrow(memberId);
+    public void deleteMember(Long memberNo) {
+        log.debug("회원 탈퇴 요청: ID {}", memberNo);
+        Member member = findMemberByIdOrThrow(memberNo);
         member.withdraw();
-        log.info("회원 탈퇴 처리 완료: ID {}", memberId);
+        log.info("회원 탈퇴 처리 완료: ID {}", memberNo);
     }
 
     /**
@@ -181,26 +192,38 @@ public class MemberServiceImpl implements MemberService {
         log.debug("로그인 정보 조회 성공: 이메일 {}", email);
         // 로그인 정보 DTO 생성 및 반환
         return new MemberLoginResponse(
-                member.getMemberId(),
+                member.getMemberNo(),
                 member.getMemberEmail(),
-                member.getMemberPassword(), // 해시된 비밀번호 전달
+                member.getMemberPassword(),
                 member.getRole() != null ? member.getRole().getRoleId() : null // 역할 정보 포함
         );
+    }
+
+    /**
+     * @param memberEmail 마지막 로그인 시간을 변경할 memberEmail
+     */
+    @Override
+    public void updateLoginAt(String memberEmail) {
+        if(memberRepository.existsByMemberEmail(memberEmail)) {
+            throw new NotExistMemberException(String.format("%s 에 해당하는 멤버는 존재하지 않습니다.", memberEmail));
+        }
+        Member member = memberRepository.findByMemberEmail(memberEmail).orElseThrow(() -> new NotExistMemberException("DB에서 찾지 못했습니다. "));
+        member.updateLastLoginTime();
     }
 
     /**
      * 주어진 ID로 {@link Member}를 조회하고, 존재하지 않으면 {@code NotExistMemberException}을 발생시키는 내부 헬퍼 메서드입니다.
      * 서비스 내 여러 메서드에서 회원 조회 및 예외 처리 로직의 중복을 방지합니다.
      *
-     * @param memberId 조회할 회원의 고유 ID (UUID)
+     * @param memberNo 조회할 회원의 고유 ID
      * @return 조회된 {@link Member} 엔티티
      * @throws NotExistMemberException 해당 ID의 회원이 데이터베이스에 존재하지 않을 경우
      */
-    private Member findMemberByIdOrThrow(String memberId) {
-        return memberRepository.findById(memberId)
+    private Member findMemberByIdOrThrow(Long memberNo) {
+        return memberRepository.findById(memberNo)
                 .orElseThrow(() -> {
-                    log.warn("내부 조회 실패: 존재하지 않는 회원 ID {}", memberId);
-                    return new NotExistMemberException("회원을 찾을 수 없습니다: ID " + memberId);
+                    log.warn("내부 조회 실패: 존재하지 않는 회원 ID {}", memberNo);
+                    return new NotExistMemberException("회원을 찾을 수 없습니다: ID " + memberNo);
                 });
     }
 
@@ -218,18 +241,10 @@ public class MemberServiceImpl implements MemberService {
         String roleId = (member.getRole() != null) ? member.getRole().getRoleId() : null;
 
         return new MemberResponse(
-                member.getMemberId(),
+                member.getMemberNo(),
                 member.getMemberEmail(),
                 companyDomain,
                 roleId
         );
-    }
-
-    /**
-     *
-     * @param member 마지막 로그인 시간을 변경할 member
-     */
-    private void updateLoginAt(Member member){
-        member.updateLastLoginTime();
     }
 }

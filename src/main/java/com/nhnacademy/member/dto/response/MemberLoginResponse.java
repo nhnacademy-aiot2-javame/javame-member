@@ -14,9 +14,9 @@ import lombok.NoArgsConstructor;
 public class MemberLoginResponse {
 
     /**
-     * 회원 식별 아이디(UUID).
+     * 회원 식별 아이디.
      */
-    private String memberId;
+    private Long memberNo;
 
     /**
      * 회원 이메일.

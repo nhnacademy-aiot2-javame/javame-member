@@ -1,4 +1,4 @@
-package com.nhnacademy.role.controller;
+package com.nhnacademy;
 
 import com.nhnacademy.role.dto.request.RoleRegisterRequest;
 import com.nhnacademy.role.dto.request.RoleUpdateRequest;
@@ -21,7 +21,7 @@ import java.util.List;
  * 모든 경로는 "/api/v1/roles"를 기본으로 합니다.
  */
 @RestController
-@RequestMapping(value = "/api/v1/roles", produces = MediaType.APPLICATION_JSON_VALUE) // 기본 경로 및 JSON 형태 응답 타입
+@RequestMapping(value = "/roles", produces = MediaType.APPLICATION_JSON_VALUE) // 기본 경로 및 JSON 형태 응답 타입
 @RequiredArgsConstructor
 public class RoleController {
 

@@ -1,5 +1,6 @@
 package com.nhnacademy.member.service;
 
+import com.nhnacademy.member.domain.Member;
 import com.nhnacademy.member.dto.request.MemberPasswordChangeRequest;
 import com.nhnacademy.member.dto.request.MemberRegisterRequest;
 import com.nhnacademy.member.dto.response.MemberLoginResponse;
@@ -26,34 +27,43 @@ public interface MemberService {
     MemberResponse registerMember(MemberRegisterRequest request);
 
     /**
-     * 회원 ID(UUID)를 사용하여 특정 회원의 상세 정보를 조회합니다.
+     * 회원 ID를 사용하여 특정 회원의 상세 정보를 조회합니다.
      *
-     * @param memberId 조회할 회원의 고유 ID (UUID)
+     * @param memberNo 조회할 회원의 고유 ID
      * @return 조회된 회원의 정보 (비밀번호 제외)
      * @throws ResourceNotFoundException 해당 ID를 가진 회원을 찾을 수 없을 경우
      */
-    MemberResponse getMemberById(String memberId);
+    MemberResponse getMemberById(Long memberNo);
 
+
+    /**
+     * 회원 Email을 사용하여 특정 회원의 상세 정보를 조회합니다.
+     *
+     * @param memberEmail 조회할 회원의 이메일
+     * @return 조회된 회원의 정보 (비밀번호 제외)
+     * @throws ResourceNotFoundException 해당 ID를 가진 회원을 찾을 수 없을 경우
+     */
+    MemberResponse getMemberByEmail(String memberEmail);
 
     /**
      * 회원의 비밀번호를 변경합니다.
      * 변경 전 현재 비밀번호를 확인하는 과정이 포함됩니다.
      *
-     * @param memberId 비밀번호를 변경할 회원의 고유 ID (UUID)
+     * @param memberNo 비밀번호를 변경할 회원의 고유 ID
      * @param request  현재 비밀번호와 변경할 새 비밀번호가 담긴 요청 DTO
      * @throws ResourceNotFoundException 해당 ID를 가진 회원을 찾을 수 없을 경우
      * @throws IllegalArgumentException  현재 비밀번호가 일치하지 않거나 새 비밀번호 형식이 유효하지 않을 경우
      */
-    void changeMemberPassword(String memberId, MemberPasswordChangeRequest request);
+    void changeMemberPassword(Long memberNo, MemberPasswordChangeRequest request);
 
     /**
      * 회원을 시스템에서 탈퇴 처리합니다 (논리적 삭제/Soft Delete).
      * 실제 데이터 레코드는 삭제되지 않으며, 탈퇴 상태를 표시하는 필드가 업데이트됩니다.
      *
-     * @param memberId 탈퇴 처리할 회원의 고유 ID (UUID)
+     * @param memberNo 탈퇴 처리할 회원의 고유 ID
      * @throws ResourceNotFoundException 해당 ID를 가진 회원을 찾을 수 없을 경우
      */
-    void deleteMember(String memberId);
+    void deleteMember(Long memberNo);
 
     /**
      * 주어진 이메일 주소에 해당하는 회원의 로그인 관련 핵심 정보를 조회합니다.
@@ -64,4 +74,11 @@ public interface MemberService {
      * @throws ResourceNotFoundException 해당 이메일 주소를 가진 회원을 찾을 수 없을 경우
      */
     MemberLoginResponse getLoginInfoByEmail(String email);
+
+
+    /**
+     * 회원이 로그인 된 후 최근 로그인 기록을 업데이트합니다.
+     * @param memberEmail
+     */
+    void updateLoginAt(String memberEmail);
 }

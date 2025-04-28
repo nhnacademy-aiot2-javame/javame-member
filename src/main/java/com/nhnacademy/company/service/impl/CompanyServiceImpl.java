@@ -107,7 +107,7 @@ public class CompanyServiceImpl implements CompanyService {
         Member savedOwner = memberRepository.save(newOwner);
 
         log.info("Owner 멤버 등록 성공: 이메일 '{}', ID '{}'",
-               savedOwner.getMemberEmail(), savedOwner.getMemberId());
+               savedOwner.getMemberEmail(), savedOwner.getMemberNo());
         return mapToCompanyResponse(savedCompany);
     }
 

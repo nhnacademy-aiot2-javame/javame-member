@@ -1,4 +1,4 @@
-package com.nhnacademy.member.controller;
+package com.nhnacademy;
 
 
 import com.nhnacademy.member.dto.request.MemberPasswordChangeRequest;
@@ -41,15 +41,39 @@ public class MemberController {
     }
 
     /**
+     * 회원이 로그인하고 가장 최근에 로그인한 시간을 나타내는 lastLoginAt을 업데이트합니다.
+     * @param memberEmail
+     * @return HTTP 상태 코드 200 (OK)를 반환합니다.
+     */
+    @PutMapping("/last-login")
+    public ResponseEntity<Void> updateLastLogin(@RequestBody String memberEmail){
+        memberService.updateLoginAt(memberEmail);
+        return ResponseEntity.status(HttpStatus.OK).build();
+    }
+
+    /**
      * 주어진 회원 ID(UUID)에 해당하는 회원 정보를 조회합니다.
      * 성공 시 HTTP 상태 코드 200 (OK)과 회원 정보를 반환합니다.
      *
-     * @param memberId 조회할 회원의 UUID (경로 변수)
+     * @param memberNo 조회할 회원의 UUID (경로 변수)
      * @return 조회된 회원 정보 ({@link MemberResponse})와 상태 코드 200
      */
-    @GetMapping("/{memberId}")
-    public ResponseEntity<MemberResponse> getMemberById(@PathVariable String memberId) {
-        MemberResponse response = memberService.getMemberById(memberId);
+    @GetMapping("/{memberNo}")
+    public ResponseEntity<MemberResponse> getMemberById(@PathVariable Long memberNo) {
+        MemberResponse response = memberService.getMemberById(memberNo);
+        return ResponseEntity.ok(response);
+    }
+
+    /**
+     * 주어진 회원 email 에 해당하는 회원 정보를 조회합니다.
+     * 성공 시 HTTP 상태 코드 200 (OK)과 회원 정보를 반환합니다.
+     *
+     * @param memberEmail 조회할 회원의 Email
+     * @return 조회된 회원 정보 ({@link MemberResponse})와 상태 코드 200
+     */
+    @GetMapping("/member-email")
+    public ResponseEntity<MemberResponse> getMemberByEmail(@RequestBody String memberEmail) {
+        MemberResponse response = memberService.getMemberByEmail(memberEmail);
         return ResponseEntity.ok(response);
     }
 
@@ -59,15 +83,15 @@ public class MemberController {
      * 요청 본문에는 현재 비밀번호와 새 비밀번호가 포함되어야 합니다.
      * 성공 시 HTTP 상태 코드 204 (No Content)를 반환합니다. (본문 없음)
      *
-     * @param memberId 비밀번호를 변경할 회원의 UUID (경로 변수)
+     * @param memberNo 비밀번호를 변경할 회원의 UUID (경로 변수)
      * @param request  비밀번호 변경 정보 DTO ({@link MemberPasswordChangeRequest})
      * @return 상태 코드 204 (No Content)
      */
-    @PutMapping("/{memberId}/password")
+    @PutMapping("/{memberNo}/password")
     public ResponseEntity<Void> changeMemberPassword(
-            @PathVariable String memberId,
+            @PathVariable Long memberNo,
             @Validated @RequestBody MemberPasswordChangeRequest request ) {
-        memberService.changeMemberPassword(memberId, request);
+        memberService.changeMemberPassword(memberNo, request);
         return ResponseEntity.noContent().build();
     }
 
@@ -75,13 +99,13 @@ public class MemberController {
      * 주어진 회원 ID에 해당하는 회원을 탈퇴 처리(논리적 삭제)합니다.
      * 성공 시 HTTP 상태 코드 204 (No Content)를 반환합니다. (본문 없음)
      *
-     * @param memberId 탈퇴 처리할 회원의 UUID (경로 변수)
+     * @param memberNo 탈퇴 처리할 회원의 UUID (경로 변수)
      * @return 상태 코드 204 (No Content)
      */
-    @DeleteMapping("/{memberId}")
+    @DeleteMapping("/{memberNo}")
     public ResponseEntity<Void> deleteMember(
-            @PathVariable String memberId) {
-        memberService.deleteMember(memberId);
+            @PathVariable Long memberNo) {
+        memberService.deleteMember(memberNo);
         return ResponseEntity.noContent().build();
     }
 

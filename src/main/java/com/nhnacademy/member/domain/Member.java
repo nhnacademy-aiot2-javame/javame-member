@@ -26,9 +26,10 @@ public class Member {
      * 회원 고유 식별자 (UUID).
      */
     @Id
-    @Column(name = "member_id", length = 36)
-    @Comment("회원 ID (UUID)")
-    private String memberId;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "member_no")
+    @Comment("회원 고유 식별자")
+    private Long memberNo;
 
     /**
      * 회원이 속한 회사 정보.
@@ -89,14 +90,12 @@ public class Member {
      * Member 엔티티의 비공개 생성자입니다.
      * 정적 팩토리 메서드(createMember)를 통해 객체를 생성해야 합니다.
      *
-     * @param memberId      회원 ID (UUID)
      * @param company       소속 회사
      * @param role          회원 역할
      * @param memberEmail   회원 이메일
      * @param memberPassword 해싱된 비밀번호
      */
-    public Member(String memberId, Company company, Role role, String memberEmail, String memberPassword) {
-        this.memberId = memberId;
+    public Member(Company company, Role role, String memberEmail, String memberPassword) {
         this.company = company;
         this.role = role;
         this.memberEmail = memberEmail;
@@ -119,8 +118,7 @@ public class Member {
                 || memberPassword == null) {
             throw new IllegalArgumentException("Member 생성에 필요한 인자가 null입니다.");
         }
-        String memberUuid = UUID.randomUUID().toString();
-        return new Member(memberUuid, company, role, memberEmail, memberPassword);
+        return new Member(company, role, memberEmail, memberPassword);
     }
 
     /**

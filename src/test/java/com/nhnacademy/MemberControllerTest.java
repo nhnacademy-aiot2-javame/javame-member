@@ -1,13 +1,11 @@
-//
-//package com.nhnacademy.exam.javamememberapi.member;
+//package com.nhnacademy.member;
 //
 //import com.fasterxml.jackson.databind.ObjectMapper;
-//import com.nhnacademy.exam.javamememberapi.member.controller.MemberController;
-//import com.nhnacademy.exam.javamememberapi.member.domain.Member;
-//import com.nhnacademy.exam.javamememberapi.member.dto.MemberRegisterRequest;
-//import com.nhnacademy.exam.javamememberapi.member.dto.MemberResponse;
-//import com.nhnacademy.exam.javamememberapi.member.service.MemberService;
-//import com.nhnacademy.exam.javamememberapi.role.domain.Role;
+//import com.nhnacademy.MemberController;
+//import com.nhnacademy.member.domain.Member;
+//import com.nhnacademy.member.dto.response.MemberResponse;
+//import com.nhnacademy.member.service.MemberService;
+//import com.nhnacademy.role.domain.Role;
 //import org.junit.jupiter.api.BeforeEach;
 //import org.junit.jupiter.api.DisplayName;
 //import org.junit.jupiter.api.Test;
@@ -27,6 +25,7 @@
 //import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 //import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 //
+//
 //@ExtendWith(MockitoExtension.class)
 //@WebMvcTest(controllers = MemberController.class)
 //class MemberControllerTest {
@@ -37,10 +36,15 @@
 //    @MockitoBean
 //    MemberService memberService;
 //
-////    @MockitoBean
-////    ObjectMapper objectMapper;
+//    @Autowired
+//    ObjectMapper objectMapper;
+//
+//    Role role;
+//
+//    Member member;
 //
 //    MemberResponse memberResponse;
+//
 //    @BeforeEach
 //    void setUp() {
 //        memberResponse = new MemberResponse(
@@ -49,7 +53,7 @@
 //                "홍길동",
 //                LocalDate.of(2025,1,1),
 //                "nhnacademy@naver.com",
-//                "010-1111-1111",
+//                "010-1234-5678",
 //                "M",
 //                "ROLE_ADMIN"
 //        );
@@ -61,25 +65,32 @@
 //    void registerMemberTest() throws Exception {
 //        Mockito.when(memberService.registerMember(Mockito.any())).thenReturn(memberResponse);
 //        mockMvc
-//                .perform(post("/api/v1/members")
+//                .perform(post("")
 //                        .contentType(MediaType.APPLICATION_JSON)
 //                        .accept(MediaType.APPLICATION_JSON)
 //                        .content(
 //                                """
 //{
-//    "memberBirth": "2025-01-01",
-//    "memberEmail": "nane@naver.com",
 //    "memberId": "javame",
-//    "memberMobile": "010-1234-5678",
 //    "memberName": "홍길동",
-//    "memberPassword": "password",
-//    "memberSex": "M",
-//    "roleId": "ROLE_ADMIN"
-//}
+//    "memberPassword": "encoding",
+//    "memberBirth": "2025-01-01",
+//    "memberEmail": "nhnacademy@naver.com",
+//    "memberMobile": "010-1234-5678",
+//    "memberSex": "M"
+//    }
 //                                """
 //                        ))
 //                .andExpect(status().isCreated())
 //                .andExpect(jsonPath("$.memberId").value("javame"))
+//                .andExpect(jsonPath("$.memberName").value("홍길동"))
+//                .andExpect(jsonPath("$.memberBirth").value("2025-01-01"))
+//                .andExpect(jsonPath("$.memberEmail").value("nhnacademy@naver.com"))
+//                .andExpect(jsonPath("$.memberMobile").value("010-1234-5678"))
+//                .andExpect(jsonPath("$.memberSex").value("M"))
+//                .andExpect(jsonPath("$.roleId").value("ROLE_ADMIN"))
 //                .andDo(print());
 //    }
+//
+//
 //}
