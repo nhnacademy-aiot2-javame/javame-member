@@ -119,9 +119,9 @@ public class MemberServiceImpl implements MemberService {
     @Transactional(readOnly = true)
     public MemberResponse getMemberByEmail(String memberEmail) {
         log.debug("회원 정보 조회 요청: email {}", memberEmail);
-        Member member = memberRepository.findByMemberEmail(memberEmail).orElseThrow(
-                                                                            ()-> new NotExistMemberException(
-                                                                                    String.format("%s로 회원을 찾지 못했습니다.", memberEmail)));
+        Member member = memberRepository.findByMemberEmail(memberEmail)
+                .orElseThrow(() -> new NotExistMemberException(
+                        String.format("%s로 회원을 찾지 못했습니다.", memberEmail)));
         log.debug("회원 정보 조회 성공: email {}", memberEmail);
         return mapToMemberResponse(member);
     }
@@ -204,12 +204,18 @@ public class MemberServiceImpl implements MemberService {
      */
     @Override
     public void updateLoginAt(String memberEmail) {
-        if(memberRepository.existsByMemberEmail(memberEmail)) {
+        // 이메일이 존재하지 않는 경우 예외 처리
+        if (!memberRepository.existsByMemberEmail(memberEmail)) {
             throw new NotExistMemberException(String.format("%s 에 해당하는 멤버는 존재하지 않습니다.", memberEmail));
         }
-        Member member = memberRepository.findByMemberEmail(memberEmail).orElseThrow(() -> new NotExistMemberException("DB에서 찾지 못했습니다. "));
+        // 이메일로 회원을 찾고, 찾지 못하면 예외 처리
+        Member member = memberRepository.findByMemberEmail(memberEmail)
+                .orElseThrow(() -> new NotExistMemberException("DB에서 찾지 못했습니다."));
+
+        // 로그인 시간 업데이트
         member.updateLastLoginTime();
     }
+
 
     /**
      * 주어진 ID로 {@link Member}를 조회하고, 존재하지 않으면 {@code NotExistMemberException}을 발생시키는 내부 헬퍼 메서드입니다.

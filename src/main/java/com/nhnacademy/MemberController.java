@@ -42,12 +42,12 @@ public class MemberController {
 
     /**
      * 회원이 로그인하고 가장 최근에 로그인한 시간을 나타내는 lastLoginAt을 업데이트합니다.
-     * @param memberEmail
+     * @param email
      * @return HTTP 상태 코드 200 (OK)를 반환합니다.
      */
-    @PutMapping("/last-login")
-    public ResponseEntity<Void> updateLastLogin(@RequestBody String memberEmail){
-        memberService.updateLoginAt(memberEmail);
+    @PutMapping("/{email}/last-login")
+    public ResponseEntity<Void> updateLastLogin(@PathVariable String email){
+        memberService.updateLoginAt(email);
         return ResponseEntity.status(HttpStatus.OK).build();
     }
 
