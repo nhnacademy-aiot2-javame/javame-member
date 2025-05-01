@@ -26,6 +26,10 @@ public interface MemberService {
      */
     MemberResponse registerMember(MemberRegisterRequest request);
 
+
+    MemberResponse registerOwner(MemberRegisterRequest request);
+
+
     /**
      * 회원 ID를 사용하여 특정 회원의 상세 정보를 조회합니다.
      *

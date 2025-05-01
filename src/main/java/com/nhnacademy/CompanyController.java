@@ -1,7 +1,7 @@
 package com.nhnacademy; // 패키지 경로 확인
 
 import com.nhnacademy.company.dto.request.CompanyUpdateEmailRequest;
-import com.nhnacademy.company.dto.request.CompanyWithOwnerRegisterRequest;
+import com.nhnacademy.company.dto.request.CompanyRegisterRequest;
 import com.nhnacademy.company.dto.request.CompanyUpdateRequest;
 import com.nhnacademy.company.dto.response.CompanyResponse;
 import com.nhnacademy.company.service.CompanyService;
@@ -33,13 +33,13 @@ public class CompanyController {
      * 신규 회사를 등록하고 동시에 첫 번째 관리자(Owner) 회원을 생성합니다.
      * 성공 시 HTTP 상태 코드 201 (Created)과 생성된 회사 정보를 반환합니다.
      *
-     * @param request 회사 정보 및 Owner 회원 정보 DTO ({@link CompanyWithOwnerRegisterRequest})
+     * @param request 회사 정보 및 Owner 회원 정보 DTO ({@link CompanyRegisterRequest})
      * @return 생성된 회사 정보 ({@link CompanyResponse})와 상태 코드 201
      */
-    @PostMapping
-    public ResponseEntity<CompanyResponse> registerCompanyWithOwner(
-            @Validated @RequestBody CompanyWithOwnerRegisterRequest request) {
-        CompanyResponse response = companyService.registerCompanyWithOwner(request);
+    @PostMapping("/register")
+    public ResponseEntity<CompanyResponse> registerCompany(
+            @Validated @RequestBody CompanyRegisterRequest request) {
+        CompanyResponse response = companyService.registerCompany(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 

@@ -40,6 +40,12 @@ public class MemberController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
+    @PostMapping("/owner")
+    public ResponseEntity<MemberResponse> registerOwner(@Validated @RequestBody MemberRegisterRequest request) {
+        MemberResponse response = memberService.registerOwner(request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
     /**
      * 회원이 로그인하고 가장 최근에 로그인한 시간을 나타내는 lastLoginAt을 업데이트합니다.
      * @param email

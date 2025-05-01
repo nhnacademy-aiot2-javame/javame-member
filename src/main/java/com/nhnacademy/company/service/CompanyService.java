@@ -3,7 +3,7 @@ package com.nhnacademy.company.service;
 
 import com.nhnacademy.company.dto.request.CompanyUpdateEmailRequest;
 import com.nhnacademy.company.dto.request.CompanyUpdateRequest;
-import com.nhnacademy.company.dto.request.CompanyWithOwnerRegisterRequest;
+import com.nhnacademy.company.dto.request.CompanyRegisterRequest;
 import com.nhnacademy.company.dto.response.CompanyResponse;
 
 import java.util.List;
@@ -19,10 +19,10 @@ public interface CompanyService {
      * 이 작업은 단일 트랜잭션으로 처리되어 원자성을 보장합니다.
      * 회사 도메인과 Owner의 이메일은 시스템 내에서 고유해야 합니다.
      *
-     * @param request 회사 정보 및 첫 Owner 회원 정보가 담긴 {@link CompanyWithOwnerRegisterRequest} DTO
+     * @param request 회사 정보 및 첫 Owner 회원 정보가 담긴 {@link CompanyRegisterRequest} DTO
      * @return 등록 완료된 회사의 정보 ({@link CompanyResponse})
      */
-    CompanyResponse registerCompanyWithOwner(CompanyWithOwnerRegisterRequest request);
+    CompanyResponse registerCompany(CompanyRegisterRequest request);
 
 
     /**

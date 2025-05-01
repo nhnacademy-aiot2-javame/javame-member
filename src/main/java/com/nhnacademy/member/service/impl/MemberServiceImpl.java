@@ -1,7 +1,7 @@
 package com.nhnacademy.member.service.impl;
 
 import com.nhnacademy.company.common.NotExistCompanyException;
-import com.nhnacademy.company.domian.Company;
+import com.nhnacademy.company.domain.Company;
 import com.nhnacademy.company.repository.CompanyRepository;
 import com.nhnacademy.member.common.AlreadyExistMemberException;
 import com.nhnacademy.member.common.NotExistMemberException;
@@ -52,6 +52,9 @@ public class MemberServiceImpl implements MemberService {
     @Value("${app.security.default-role-id:ROLE_USER}")
     private String defaultUserRoleId;
 
+    @Value("${app.security.owner-role-id:ROLE_OWNER}")
+    private String defaultOwnerRoleId;
+
     /**
      * {@inheritDoc}
      * 이 메서드는 사전에 등록된 기존 회사에 새로운 멤버를 등록합니다.
@@ -90,6 +93,45 @@ public class MemberServiceImpl implements MemberService {
                             + ") 을 찾을 수 없습니다.");
                 });
         log.info("신규 멤버에게 역할 '{}' 할당 예정.", defaultUserRoleId);
+
+        // Member 엔티티 생성 및 저장
+        Member newMember = Member.ofNewMember(company, userRole, request.getMemberEmail(), request.getMemberPassword());
+        Member savedMember = memberRepository.save(newMember);
+        log.info("회원 등록 성공: 이메일 '{}', ID '{}'", savedMember.getMemberEmail(), savedMember.getMemberNo());
+
+        // 응답 DTO 변환 후 반환
+        return mapToMemberResponse(savedMember);
+    }
+
+    @Override
+    public MemberResponse registerOwner(MemberRegisterRequest request) {
+        log.debug("회원 등록 요청 처리 시작: 이메일 {}", request.getMemberEmail());
+
+        // 이메일 중복 확인
+        if (memberRepository.existsByMemberEmail(request.getMemberEmail())) {
+            log.warn("회원 등록 실패: 이미 존재하는 이메일 {}", request.getMemberEmail());
+            throw new AlreadyExistMemberException("이미 존재하는 이메일 입니다 : " + request.getMemberEmail());
+        }
+
+        // 소속 회사 조회 (반드시 존재해야 함)
+        Company company = companyRepository.findById(request.getCompanyDomain())
+                .orElseThrow(() -> {
+                    log.warn("회원 등록 실패: 존재하지 않는 회사 도메인 {}", request.getCompanyDomain());
+                    return new NotExistCompanyException("가입하려는 회사 도메인('"
+                            + request.getCompanyDomain()
+                            + "')을 찾을 수 없습니다. 회사 등록을 먼저 진행해주세요.");
+                });
+        log.info("회사 확인됨: '{}'. 신규 오너 등록 진행.", company.getCompanyDomain());
+
+        // 기본 사용자 역할 조회
+        Role userRole = roleRepository.findById(defaultOwnerRoleId)
+                .orElseThrow(() -> {
+                    log.error("회원 등록 실패: 시스템 기본 역할 '{}' 없음.", defaultOwnerRoleId);
+                    return new NotExistRoleException("시스템 기본 역할("
+                            + defaultOwnerRoleId
+                            + ") 을 찾을 수 없습니다.");
+                });
+        log.info("신규 오너에게 역할 '{}' 할당 예정.", defaultOwnerRoleId);
 
         // Member 엔티티 생성 및 저장
         Member newMember = Member.ofNewMember(company, userRole, request.getMemberEmail(), request.getMemberPassword());

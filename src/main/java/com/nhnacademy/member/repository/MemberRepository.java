@@ -1,6 +1,6 @@
 package com.nhnacademy.member.repository;
 
-import com.nhnacademy.company.domian.Company;
+import com.nhnacademy.company.domain.Company;
 import com.nhnacademy.member.domain.Member;
 import com.nhnacademy.role.domain.Role;
 import org.springframework.data.jpa.repository.JpaRepository;

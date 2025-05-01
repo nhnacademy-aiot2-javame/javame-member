@@ -1,4 +1,4 @@
-package com.nhnacademy.company.domian;
+package com.nhnacademy.company.domain;
 
 import jakarta.persistence.*;
 import lombok.AccessLevel;

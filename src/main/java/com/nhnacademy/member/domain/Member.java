@@ -1,6 +1,6 @@
 package com.nhnacademy.member.domain;
 
-import com.nhnacademy.company.domian.Company;
+import com.nhnacademy.company.domain.Company;
 import com.nhnacademy.role.domain.Role;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -10,7 +10,6 @@ import lombok.ToString;
 import org.hibernate.annotations.Comment;
 
 import java.time.LocalDateTime;
-import java.util.UUID;
 
 /**
  * 회원 정보를 저장하는 엔티티 클래스입니다.

@@ -1,6 +1,6 @@
 package com.nhnacademy.company.repository;
 
-import com.nhnacademy.company.domian.Company;
+import com.nhnacademy.company.domain.Company;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;

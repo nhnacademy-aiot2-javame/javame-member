@@ -3,17 +3,15 @@ package com.nhnacademy.company.service.impl;
 import com.nhnacademy.company.common.AlreadyExistCompanyException;
 import com.nhnacademy.company.common.NotExistCompanyException;
 import com.nhnacademy.company.common.NotFoundCompanyByEmailException;
-import com.nhnacademy.company.domian.Company;
+import com.nhnacademy.company.domain.Company;
 import com.nhnacademy.company.dto.request.CompanyUpdateEmailRequest;
 import com.nhnacademy.company.dto.request.CompanyUpdateRequest;
-import com.nhnacademy.company.dto.request.CompanyWithOwnerRegisterRequest;
+import com.nhnacademy.company.dto.request.CompanyRegisterRequest;
 import com.nhnacademy.company.dto.response.CompanyResponse;
 import com.nhnacademy.company.repository.CompanyRepository;
 import com.nhnacademy.company.service.CompanyService;
-import com.nhnacademy.member.common.AlreadyExistMemberException;
 import com.nhnacademy.member.domain.Member;
 import com.nhnacademy.member.repository.MemberRepository;
-import com.nhnacademy.role.common.NotExistRoleException;
 import com.nhnacademy.role.domain.Role;
 import com.nhnacademy.role.repository.RoleRepository;
 import lombok.RequiredArgsConstructor;
@@ -32,7 +30,7 @@ import java.util.stream.Collectors;
  * 모든 작업은 기본적으로 트랜잭션 내에서 수행됩니다.
  *
  * @see com.nhnacademy.company.service.CompanyService
- * @see com.nhnacademy.company.domian.Company
+ * @see com.nhnacademy.company.domain.Company
  * @see com.nhnacademy.company.repository.CompanyRepository
  */
 @Service
@@ -63,18 +61,13 @@ public class CompanyServiceImpl implements CompanyService {
      * 모든 과정이 성공하면 등록된 회사 정보를 담은 {@link CompanyResponse}를 반환합니다.
      */
     @Override
-    public CompanyResponse registerCompanyWithOwner(CompanyWithOwnerRegisterRequest request) {
-        log.debug("신규 회사 및 Owner 등록 요청 시작: 도메인 {}, Owner 이메일 {}",
-            request.getCompanyDomain(), request.getOwnerEmail());
+    public CompanyResponse registerCompany(CompanyRegisterRequest request) {
+        log.debug("신규 회사 및 Owner 등록 요청 시작: 도메인 {}",
+            request.getCompanyDomain());
         // 회사 도메인 중복 체크
         if (companyRepository.existsById(request.getCompanyDomain())) {
             log.warn("회사 등록 실패: 이미 존제하는 도메인 {}", request.getCompanyDomain());
             throw new AlreadyExistCompanyException("이미 사용 중인 회사 도메인입니다.");
-        }
-        // Owner 이메일 중복 체크
-        if (memberRepository.existsByMemberEmail(request.getOwnerEmail())) {
-            log.warn("회사 등록 실패: 이미 존재하는 Owner 이메일 {}", request.getOwnerEmail());
-            throw new AlreadyExistMemberException("이미 사용 중인 Owner 이메일입니다.");
         }
 
         // 신규 회사 생성
@@ -88,26 +81,6 @@ public class CompanyServiceImpl implements CompanyService {
         Company savedCompany = companyRepository.save(newCompany);
         log.debug("신규 회사 등록 완료: {}", savedCompany);
 
-        // Owner 역할 조회 -> 역할 관련 예외 사용
-        Role ownerRole = roleRepository.findById(ownerRoleId)
-                .orElseThrow(() -> {
-                    log.error("회사 등록 실패: 시스템 Owner 역할 '{}' 없음.", ownerRoleId);
-                    return new NotExistRoleException("시스템 Owner 역할(" + ownerRoleId + ")을 찾을 수 없습니다.");
-                });
-        log.info("Owner 에게 역할 '{}' 할당 예정.", ownerRoleId);
-
-
-        // 신규 Owner 회원 생성
-        Member newOwner = Member.ofNewMember(
-                savedCompany,
-                ownerRole,
-                request.getOwnerEmail(),
-                request.getOwnerPassword()
-        );
-        Member savedOwner = memberRepository.save(newOwner);
-
-        log.info("Owner 멤버 등록 성공: 이메일 '{}', ID '{}'",
-               savedOwner.getMemberEmail(), savedOwner.getMemberNo());
         return mapToCompanyResponse(savedCompany);
     }
 
