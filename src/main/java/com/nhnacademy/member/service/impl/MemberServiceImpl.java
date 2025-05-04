@@ -121,7 +121,7 @@ public class MemberServiceImpl implements MemberService {
                             + request.getCompanyDomain()
                             + "')을 찾을 수 없습니다. 회사 등록을 먼저 진행해주세요.");
                 });
-        log.info("회사 확인됨: '{}'. 신규 오너 등록 진행.", company.getCompanyDomain());
+        log.info("회사 확인됨: '{}'. 신규 멤버 등록 진행.", company.getCompanyDomain());
 
         // 기본 사용자 역할 조회
         Role userRole = roleRepository.findById(defaultOwnerRoleId)
@@ -131,7 +131,7 @@ public class MemberServiceImpl implements MemberService {
                             + defaultOwnerRoleId
                             + ") 을 찾을 수 없습니다.");
                 });
-        log.info("신규 오너에게 역할 '{}' 할당 예정.", defaultOwnerRoleId);
+        log.info("신규 멤버에게 역할 '{}' 할당 예정.", defaultOwnerRoleId);
 
         // Member 엔티티 생성 및 저장
         Member newMember = Member.ofNewMember(company, userRole, request.getMemberEmail(), request.getMemberPassword());
@@ -246,15 +246,8 @@ public class MemberServiceImpl implements MemberService {
      */
     @Override
     public void updateLoginAt(String memberEmail) {
-        // 이메일이 존재하지 않는 경우 예외 처리
-        if (!memberRepository.existsByMemberEmail(memberEmail)) {
-            throw new NotExistMemberException(String.format("%s 에 해당하는 멤버는 존재하지 않습니다.", memberEmail));
-        }
-        // 이메일로 회원을 찾고, 찾지 못하면 예외 처리
         Member member = memberRepository.findByMemberEmail(memberEmail)
-                .orElseThrow(() -> new NotExistMemberException("DB에서 찾지 못했습니다."));
-
-        // 로그인 시간 업데이트
+                .orElseThrow(() -> new NotExistMemberException(String.format("%s 에 해당하는 멤버는 존재하지 않습니다.", memberEmail)));
         member.updateLastLoginTime();
     }
 

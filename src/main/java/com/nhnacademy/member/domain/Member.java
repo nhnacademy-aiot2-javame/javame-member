@@ -123,11 +123,11 @@ public class Member {
     /**
      * 회원의 비밀번호를 변경합니다.
      *
-     * @param encodedPassword 새로 해싱된 비밀번호
+     * @param password 비밀번호
      */
-    public void changePassword(String encodedPassword) {
-        if (encodedPassword != null && encodedPassword.length() == 60) {
-            this.memberPassword = encodedPassword;
+    public void changePassword(String password) {
+        if (password != null) {
+            this.memberPassword = password;
         } else {
             // 예외 처리 또는 로깅
             throw new IllegalArgumentException("유효하지 않은 비밀번호 형식입니다.");
