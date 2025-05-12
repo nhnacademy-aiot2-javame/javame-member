@@ -40,7 +40,7 @@ jobs:
             IMAGE_TAG=${{ github.sha }}
             docker build -t janggon/javame-member-api:$IMAGE_TAG .
             docker push janggon/javame-member-api:$IMAGE_TAG
-            echo "TRANS_IMAGE_TAG=$IMAGE_TAG" >> $GITHUB_ENV
+            echo "MEMBER_IMAGE_TAG=$IMAGE_TAG" >> $GITHUB_ENV
 
       # Deploy the application using Docker-Compose
       - name: Deploy to Remote Server via SSH
