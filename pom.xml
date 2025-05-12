@@ -170,6 +170,7 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>3.2.5</version>
                 <configuration>
+                    <!--suppress UnresolvedMavenProperty -->
                     <argLine>${jacoco.argLine}</argLine>
                     <skipTests>false</skipTests>
                 </configuration>
