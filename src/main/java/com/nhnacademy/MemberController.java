@@ -74,12 +74,12 @@ public class MemberController {
      * 주어진 회원 email 에 해당하는 회원 정보를 조회합니다.
      * 성공 시 HTTP 상태 코드 200 (OK)과 회원 정보를 반환합니다.
      *
-     * @param memberEmail 조회할 회원의 Email
+     * @param email 조회할 회원의 Email
      * @return 조회된 회원 정보 ({@link MemberResponse})와 상태 코드 200
      */
-    @GetMapping("/member-email")
-    public ResponseEntity<MemberResponse> getMemberByEmail(@RequestBody String memberEmail) {
-        MemberResponse response = memberService.getMemberByEmail(memberEmail);
+    @GetMapping("/member-email/{email}")
+    public ResponseEntity<MemberResponse> getMemberByEmail(@PathVariable String email) {
+        MemberResponse response = memberService.getMemberByEmail(email);
         return ResponseEntity.ok(response);
     }
 
