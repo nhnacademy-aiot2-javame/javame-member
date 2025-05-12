@@ -80,6 +80,7 @@ public class GlobalExceptionHandler {
      */
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorResponse> handleValidationExceptions(MethodArgumentNotValidException ex) {
+        log.warn("### MethodArgumentNotValidException CAUGHT! ###"); // 디버깅 로그 추가
         String errorMessage = ex.getBindingResult().getFieldErrors().stream()
                 .map(error -> String.format("[%s] %s", error.getField(), error.getDefaultMessage()))
                 .collect(Collectors.joining("; "));
@@ -93,6 +94,8 @@ public class GlobalExceptionHandler {
         );
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
     }
+
+
 
     /**
      * 위에서 명시적으로 처리되지 않은 모든 종류의 {@link Exception}을 처리하는 최종 핸들러입니다.
