@@ -12,6 +12,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 
 /**
@@ -48,7 +49,7 @@ public class MemberController {
 
     /**
      * 회원이 로그인하고 가장 최근에 로그인한 시간을 나타내는 lastLoginAt을 업데이트합니다.
-     * @param email
+     * @param email 업데이트할 대상의 이메일 정보.
      * @return HTTP 상태 코드 200 (OK)를 반환합니다.
      */
     @PutMapping("/{email}/last-login")
@@ -65,7 +66,10 @@ public class MemberController {
      * @return 조회된 회원 정보 ({@link MemberResponse})와 상태 코드 200
      */
     @GetMapping("/{memberNo}")
-    public ResponseEntity<MemberResponse> getMemberById(@PathVariable Long memberNo) {
+    public ResponseEntity<MemberResponse> getMemberById(@PathVariable Long memberNo, @RequestHeader("X-User-Role")String userRole) {
+        if (!userRole.equals("ROLE_ADMIN") && !userRole.equals("ROLE_OWNER") && !userRole.equals("ROLE_USER")) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "접근 권한이 없습니다. ");
+        }
         MemberResponse response = memberService.getMemberById(memberNo);
         return ResponseEntity.ok(response);
     }
@@ -78,7 +82,15 @@ public class MemberController {
      * @return 조회된 회원 정보 ({@link MemberResponse})와 상태 코드 200
      */
     @GetMapping("/member-email/{email}")
-    public ResponseEntity<MemberResponse> getMemberByEmail(@PathVariable String email) {
+    public ResponseEntity<MemberResponse> getMemberByEmail(@PathVariable String email,
+                                                           @RequestHeader("X-User-Email")String userEmail,
+                                                           @RequestHeader("X-User-Role")String userRole) {
+        if(!email.equals(userEmail)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "해당 정보를 조회할 권한이 없습니다.");
+        }
+        if (!userRole.equals("ROLE_ADMIN") && !userRole.equals("ROLE_OWNER") && !userRole.equals("ROLE_USER")) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "접근 권한이 없습니다. ");
+        }
         MemberResponse response = memberService.getMemberByEmail(email);
         return ResponseEntity.ok(response);
     }
@@ -96,7 +108,17 @@ public class MemberController {
     @PutMapping("/{memberNo}/password")
     public ResponseEntity<Void> changeMemberPassword(
             @PathVariable Long memberNo,
-            @Validated @RequestBody MemberPasswordChangeRequest request ) {
+            @Validated @RequestBody MemberPasswordChangeRequest request,
+            @RequestHeader("X-User-Email")String userEmail,
+            @RequestHeader("X-User-Role")String userRole) {
+
+        if (!userRole.equals("ROLE_ADMIN") && !userRole.equals("ROLE_OWNER") && !userRole.equals("ROLE_USER")) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "접근 권한이 없습니다. ");
+        }
+        MemberResponse memberResponse = memberService.getMemberByEmail(userEmail);
+        if(!memberResponse.getMemberNo().equals(memberNo)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "접근 권한이 없습니다. ");
+        }
         memberService.changeMemberPassword(memberNo, request);
         return ResponseEntity.noContent().build();
     }
@@ -110,7 +132,17 @@ public class MemberController {
      */
     @DeleteMapping("/{memberNo}")
     public ResponseEntity<Void> deleteMember(
-            @PathVariable Long memberNo) {
+            @PathVariable Long memberNo,
+            @RequestHeader("X-User-Email")String userEmail,
+            @RequestHeader("X-User-Role")String userRole) {
+
+        if (!userRole.equals("ROLE_ADMIN") && !userRole.equals("ROLE_OWNER") && !userRole.equals("ROLE_USER")) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "접근 권한이 없습니다. ");
+        }
+        MemberResponse memberResponse = memberService.getMemberByEmail(userEmail);
+        if(!memberResponse.getMemberNo().equals(memberNo)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "해당 정보를 삭제할 권한이 없습니다.");
+        }
         memberService.deleteMember(memberNo);
         return ResponseEntity.noContent().build();
     }
@@ -125,7 +157,16 @@ public class MemberController {
      */
     @GetMapping("/login-info/{email}")
     public ResponseEntity<MemberLoginResponse> getLoginInfoByEmail(
-            @PathVariable String email) {
+            @PathVariable String email,
+            @RequestHeader("X-User-Email")String userEmail,
+            @RequestHeader("X-User-Role")String userRole) {
+
+        if (!userRole.equals("ROLE_ADMIN") && !userRole.equals("ROLE_OWNER") && !userRole.equals("ROLE_USER")) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "접근 권한이 없습니다. ");
+        }
+        if(!email.equals(userEmail)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "해당 정보에 대한 접근 권한이 없습니다. ");
+        }
         MemberLoginResponse response = memberService.getLoginInfoByEmail(email);
         return ResponseEntity.ok(response);
     }

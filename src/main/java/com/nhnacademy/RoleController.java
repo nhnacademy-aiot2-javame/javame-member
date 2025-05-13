@@ -11,6 +11,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
@@ -36,7 +37,12 @@ public class RoleController {
      */
     @PostMapping
     public ResponseEntity<RoleResponse> registerRole(
-            @Validated @RequestBody RoleRegisterRequest request) {
+            @Validated @RequestBody RoleRegisterRequest request,
+            @RequestHeader("X-User-Role")String userRole) {
+
+        if(!userRole.equals("ROLE_ADMIN")) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "등록 권한이 없습니다.");
+        }
         RoleResponse response = roleService.registerRole(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
@@ -50,7 +56,12 @@ public class RoleController {
      */
     @GetMapping("/{roleId}")
     public ResponseEntity<RoleResponse> getRoleById(
-            @PathVariable String roleId) {
+            @PathVariable String roleId,
+            @RequestHeader("X-User-Role")String userRole) {
+
+        if(!userRole.equals("ROLE_ADMIN")) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "권한이 없습니다.");
+        }
         RoleResponse response = roleService.getRoleById(roleId);
         return ResponseEntity.ok(response);
     }
@@ -62,7 +73,10 @@ public class RoleController {
      * @return 모든 역할 정보 리스트 ({@link RoleResponse})와 상태 코드 200
      */
     @GetMapping
-    public ResponseEntity<List<RoleResponse>> getAllRoles() {
+    public ResponseEntity<List<RoleResponse>> getAllRoles(@RequestHeader("X-User-Role")String userRole) {
+        if(!userRole.equals("ROLE_ADMIN")) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "권한이 없습니다.");
+        }
         List<RoleResponse> response = roleService.getAllRoles();
         return ResponseEntity.ok(response);
     }
@@ -78,7 +92,12 @@ public class RoleController {
     @PutMapping("/{roleId}")
     public ResponseEntity<RoleResponse> updateRole(
             @PathVariable String roleId,
-            @Validated @RequestBody RoleUpdateRequest request) {
+            @Validated @RequestBody RoleUpdateRequest request,
+            @RequestHeader("X-User-Role")String userRole) {
+
+        if(!userRole.equals("ROLE_ADMIN")) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "수정 권한이 없습니다.");
+        }
         RoleResponse response = roleService.updateRole(roleId, request);
         return ResponseEntity.ok(response);
     }
@@ -93,7 +112,12 @@ public class RoleController {
      */
     @DeleteMapping("/{roleId}")
     public ResponseEntity<Void> deleteRole(
-            @PathVariable String roleId) {
+            @PathVariable String roleId,
+            @RequestHeader("X-User-Role")String userRole) {
+
+        if(!userRole.equals("ROLE_ADMIN")) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "삭제 권한이 없습니다.");
+        }
         roleService.deleteRole(roleId);
         return ResponseEntity.noContent().build();
     }
