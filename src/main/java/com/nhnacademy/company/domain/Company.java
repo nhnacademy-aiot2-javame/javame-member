@@ -1,5 +1,6 @@
 package com.nhnacademy.company.domain;
 
+import com.nhnacademy.common.util.AESUtil;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -77,7 +78,7 @@ public class Company {
      * @param companyMobile  회사 연락처
      * @param companyAddress 회사 주소
      */
-    public Company(String companyDomain, String companyName, String companyEmail,
+    private Company(String companyDomain, String companyName, String companyEmail,
                    String companyMobile, String companyAddress) {
 
         if (companyDomain == null || companyDomain.isBlank()) {

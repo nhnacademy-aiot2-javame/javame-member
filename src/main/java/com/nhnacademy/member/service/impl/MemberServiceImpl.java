@@ -1,7 +1,12 @@
 package com.nhnacademy.member.service.impl;
 
+import com.nhnacademy.common.util.AESUtil;
+import com.nhnacademy.common.util.HashUtil;
+import com.nhnacademy.common.util.PasswordUtil;
 import com.nhnacademy.company.common.NotExistCompanyException;
 import com.nhnacademy.company.domain.Company;
+import com.nhnacademy.company.domain.CompanyIndex;
+import com.nhnacademy.company.repository.CompanyIndexRepository;
 import com.nhnacademy.company.repository.CompanyRepository;
 import com.nhnacademy.member.common.AlreadyExistMemberException;
 import com.nhnacademy.member.common.NotExistMemberException;
@@ -10,6 +15,7 @@ import com.nhnacademy.member.dto.request.MemberPasswordChangeRequest;
 import com.nhnacademy.member.dto.request.MemberRegisterRequest;
 import com.nhnacademy.member.dto.response.MemberLoginResponse;
 import com.nhnacademy.member.dto.response.MemberResponse;
+import com.nhnacademy.member.repository.MemberIndexRepository;
 import com.nhnacademy.member.repository.MemberRepository;
 import com.nhnacademy.member.service.MemberService;
 import com.nhnacademy.role.common.NotExistRoleException;
@@ -45,7 +51,9 @@ import java.util.Objects;
 public class MemberServiceImpl implements MemberService {
 
     private final MemberRepository memberRepository;
+    private final MemberIndexRepository memberIndexRepository;
     private final CompanyRepository companyRepository;
+    private final CompanyIndexRepository companyIndexRepository;
     private final RoleRepository roleRepository;
 
     // application.yml 등 설정 파일에서 기본 사용자 역할 ID 주입
@@ -69,20 +77,27 @@ public class MemberServiceImpl implements MemberService {
         log.debug("회원 등록 요청 처리 시작: 이메일 {}", request.getMemberEmail());
 
         // 이메일 중복 확인
-        if (memberRepository.existsByMemberEmail(request.getMemberEmail())) {
+        String hashKey = HashUtil.sha256Hex(request.getMemberEmail());
+        if (memberIndexRepository.existsByIndexAndFieldName(hashKey, "email")) {
             log.warn("회원 등록 실패: 이미 존재하는 이메일 {}", request.getMemberEmail());
             throw new AlreadyExistMemberException("이미 존재하는 이메일 입니다 : " + request.getMemberEmail());
         }
 
         // 소속 회사 조회 (반드시 존재해야 함)
-        Company company = companyRepository.findById(request.getCompanyDomain())
+        String index = HashUtil.sha256Hex(request.getCompanyDomain());
+        //인덱스 레포지토리로 존재하는지 검색
+        CompanyIndex companyIndex = companyIndexRepository.findByIndex(index).orElseThrow(
+                () -> new NotExistCompanyException("존재하지 않는 회사 도메인입니다. " + request.getCompanyDomain()));
+
+        //인덱스 레포지토리에서 찾은 company를 통해 회사 레포지토리 검색
+        Company company = companyRepository.findById(companyIndex.getFieldValue())
                 .orElseThrow(() -> {
                     log.warn("회원 등록 실패: 존재하지 않는 회사 도메인 {}", request.getCompanyDomain());
                     return new NotExistCompanyException("가입하려는 회사 도메인('"
                             + request.getCompanyDomain()
                             + "')을 찾을 수 없습니다. 회사 등록을 먼저 진행해주세요.");
                 });
-        log.info("회사 확인됨: '{}'. 신규 멤버 등록 진행.", company.getCompanyDomain());
+        log.debug("회사 확인됨: '{}'. 신규 멤버 등록 진행.", company.getCompanyDomain());
 
         // 기본 사용자 역할 조회
         Role userRole = roleRepository.findById(defaultUserRoleId)
@@ -92,12 +107,12 @@ public class MemberServiceImpl implements MemberService {
                             + defaultUserRoleId
                             + ") 을 찾을 수 없습니다.");
                 });
-        log.info("신규 멤버에게 역할 '{}' 할당 예정.", defaultUserRoleId);
+        log.debug("신규 멤버에게 역할 '{}' 할당 예정.", defaultUserRoleId);
 
         // Member 엔티티 생성 및 저장
-        Member newMember = Member.ofNewMember(company, userRole, request.getMemberEmail(), request.getMemberPassword());
+        Member newMember = Member.ofNewMember(company, userRole, AESUtil.encrypt(request.getMemberEmail()), PasswordUtil.encode(request.getMemberPassword()));
         Member savedMember = memberRepository.save(newMember);
-        log.info("회원 등록 성공: 이메일 '{}', ID '{}'", savedMember.getMemberEmail(), savedMember.getMemberNo());
+        log.debug("회원 등록 성공: 이메일 '{}', ID '{}'", savedMember.getMemberEmail(), savedMember.getMemberNo());
 
         // 응답 DTO 변환 후 반환
         return mapToMemberResponse(savedMember);
