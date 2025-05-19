@@ -1,6 +1,7 @@
 package com.nhnacademy;
 
 
+import com.nhnacademy.config.annotation.HasRole;
 import com.nhnacademy.member.dto.request.MemberPasswordChangeRequest;
 import com.nhnacademy.member.dto.request.MemberRegisterRequest;
 import com.nhnacademy.member.dto.response.MemberLoginResponse;
@@ -40,6 +41,7 @@ public class MemberController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
+    @HasRole({"ROLE_ADMIN"})
     @PostMapping("/owner")
     public ResponseEntity<MemberResponse> registerOwner(@Validated @RequestBody MemberRegisterRequest request) {
         MemberResponse response = memberService.registerOwner(request);
@@ -51,6 +53,7 @@ public class MemberController {
      * @param email
      * @return HTTP 상태 코드 200 (OK)를 반환합니다.
      */
+    @HasRole({"ROLE_ADMIN", "ROLE_OWNER", "ROLE_USER"})
     @PutMapping("/{email}/last-login")
     public ResponseEntity<Void> updateLastLogin(@PathVariable String email){
         memberService.updateLoginAt(email);
@@ -64,6 +67,7 @@ public class MemberController {
      * @param memberNo 조회할 회원의 UUID (경로 변수)
      * @return 조회된 회원 정보 ({@link MemberResponse})와 상태 코드 200
      */
+    @HasRole({"ROLE_ADMIN", "ROLE_OWNER", "ROLE_USER"})
     @GetMapping("/{memberNo}")
     public ResponseEntity<MemberResponse> getMemberById(@PathVariable Long memberNo) {
         MemberResponse response = memberService.getMemberById(memberNo);
@@ -77,6 +81,7 @@ public class MemberController {
      * @param memberEmail 조회할 회원의 Email
      * @return 조회된 회원 정보 ({@link MemberResponse})와 상태 코드 200
      */
+    @HasRole({"ROLE_ADMIN", "ROLE_OWNER"})
     @GetMapping("/member-email")
     public ResponseEntity<MemberResponse> getMemberByEmail(@RequestBody String memberEmail) {
         MemberResponse response = memberService.getMemberByEmail(memberEmail);
@@ -93,6 +98,7 @@ public class MemberController {
      * @param request  비밀번호 변경 정보 DTO ({@link MemberPasswordChangeRequest})
      * @return 상태 코드 204 (No Content)
      */
+    @HasRole({"ROLE_ADMIN", "ROLE_OWNER", "ROLE_USER"})
     @PutMapping("/{memberNo}/password")
     public ResponseEntity<Void> changeMemberPassword(
             @PathVariable Long memberNo,
@@ -108,6 +114,7 @@ public class MemberController {
      * @param memberNo 탈퇴 처리할 회원의 UUID (경로 변수)
      * @return 상태 코드 204 (No Content)
      */
+    @HasRole({"ROLE_ADMIN", "ROLE_OWNER"})
     @DeleteMapping("/{memberNo}")
     public ResponseEntity<Void> deleteMember(
             @PathVariable Long memberNo) {
@@ -123,6 +130,7 @@ public class MemberController {
      * @param email 조회할 회원의 이메일 주소 (경로 변수)
      * @return 로그인 관련 정보 ({@link MemberLoginResponse})와 상태 코드 200
      */
+    @HasRole({"ROLE_ADMIN", "ROLE_OWNER", "ROLE_USER"})
     @GetMapping("/login-info/{email}")
     public ResponseEntity<MemberLoginResponse> getLoginInfoByEmail(
             @PathVariable String email) {
