@@ -6,6 +6,7 @@ import com.nhnacademy.company.dto.request.CompanyUpdateRequest;
 import com.nhnacademy.company.dto.response.CompanyResponse;
 import com.nhnacademy.company.service.CompanyService;
 
+import com.nhnacademy.config.annotation.HasRole;
 import com.nhnacademy.member.service.MemberService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -36,6 +37,7 @@ public class CompanyController {
      * @param request 회사 정보 및 Owner 회원 정보 DTO ({@link CompanyRegisterRequest})
      * @return 생성된 회사 정보 ({@link CompanyResponse})와 상태 코드 201
      */
+    @HasRole({"ROLE_ADMIN"})
     @PostMapping("/register")
     public ResponseEntity<CompanyResponse> registerCompany(
             @Validated @RequestBody CompanyRegisterRequest request) {
@@ -50,6 +52,7 @@ public class CompanyController {
      * @param companyDomain 조회할 회사의 도메인 (경로 변수)
      * @return 조회된 회사 정보 ({@link CompanyResponse})와 상태 코드 200
      */
+    @HasRole({"ROLE_ADMIN", "ROLE_OWNER"})
     @GetMapping("/{companyDomain}")
     public ResponseEntity<CompanyResponse> getCompanyByDomain(
             @PathVariable String companyDomain) {
@@ -63,6 +66,7 @@ public class CompanyController {
      *
      * @return 모든 회사 정보 리스트 ({@link CompanyResponse})와 상태 코드 200
      */
+    @HasRole({"ROLE_ADMIN"})
     @GetMapping
     public ResponseEntity<List<CompanyResponse>> getAllCompanies() {
         List<CompanyResponse> response = companyService.getAllCompanies();
@@ -77,6 +81,7 @@ public class CompanyController {
      * @param request       수정할 정보 DTO ({@link CompanyUpdateRequest})
      * @return 수정된 회사 정보 ({@link CompanyResponse})와 상태 코드 200
      */
+    @HasRole({"ROLE_ADMIN", "ROLE_OWNER"})
     @PutMapping("/{companyDomain}")
     public ResponseEntity<CompanyResponse> updateCompany(
             @PathVariable String companyDomain,
@@ -94,6 +99,7 @@ public class CompanyController {
      * @param request       수정할 정보 DTO ({@link CompanyUpdateEmailRequest})
      * @return 수정된 회사 정보 ({@link CompanyResponse})와 상태 코드 200
      */
+    @HasRole({"ROLE_ADMIN", "ROLE_OWNER"})
     @PutMapping("/{companyDomain}/email")
     public ResponseEntity<CompanyResponse> updateCompanyEmail(
             @PathVariable String companyDomain,
@@ -109,6 +115,7 @@ public class CompanyController {
      * @param companyDomain 비활성화할 회사의 도메인 (경로 변수)
      * @return 상태 코드 204 (No Content)
      */
+    @HasRole({"ROLE_ADMIN"})
     @PatchMapping("/{companyDomain}/deactivate") // PATCH 사용
     public ResponseEntity<Void> deactivateCompany(
             @PathVariable String companyDomain) {
@@ -123,6 +130,7 @@ public class CompanyController {
      * @param companyDomain 활성화할 회사의 도메인 (경로 변수)
      * @return 상태 코드 204 (No Content)
      */
+    @HasRole({"ROLE_ADMIN"})
     @PatchMapping("/{companyDomain}/activate") //  PATCH 사용
     public ResponseEntity<Void> activateCompany(
             @PathVariable String companyDomain) {

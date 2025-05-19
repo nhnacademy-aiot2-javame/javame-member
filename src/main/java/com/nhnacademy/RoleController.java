@@ -1,5 +1,6 @@
 package com.nhnacademy;
 
+import com.nhnacademy.config.annotation.HasRole;
 import com.nhnacademy.role.dto.request.RoleRegisterRequest;
 import com.nhnacademy.role.dto.request.RoleUpdateRequest;
 import com.nhnacademy.role.dto.response.RoleResponse;
@@ -34,6 +35,7 @@ public class RoleController {
      * @param request 역할 생성 정보 DTO ({@link RoleRegisterRequest})
      * @return 생성된 역할 정보 ({@link RoleResponse})와 상태 코드 201
      */
+    @HasRole({"ROLE_ADMIN"})
     @PostMapping
     public ResponseEntity<RoleResponse> registerRole(
             @Validated @RequestBody RoleRegisterRequest request) {
@@ -48,6 +50,7 @@ public class RoleController {
      * @param roleId 조회할 역할의 ID (경로 변수)
      * @return 조회된 역할 정보 ({@link RoleResponse})와 상태 코드 200
      */
+    @HasRole({"ROLE_ADMIN"})
     @GetMapping("/{roleId}")
     public ResponseEntity<RoleResponse> getRoleById(
             @PathVariable String roleId) {
@@ -61,6 +64,7 @@ public class RoleController {
      *
      * @return 모든 역할 정보 리스트 ({@link RoleResponse})와 상태 코드 200
      */
+    @HasRole({"ROLE_ADMIN"})
     @GetMapping
     public ResponseEntity<List<RoleResponse>> getAllRoles() {
         List<RoleResponse> response = roleService.getAllRoles();
@@ -75,6 +79,7 @@ public class RoleController {
      * @param request 수정할 정보 DTO ({@link RoleUpdateRequest})
      * @return 수정된 역할 정보 ({@link RoleResponse})와 상태 코드 200
      */
+    @HasRole({"ROLE_ADMIN"})
     @PutMapping("/{roleId}")
     public ResponseEntity<RoleResponse> updateRole(
             @PathVariable String roleId,
@@ -91,6 +96,7 @@ public class RoleController {
      * @param roleId 삭제할 역할의 ID (경로 변수)
      * @return 상태 코드 204 (No Content)
      */
+    @HasRole({"ROLE_ADMIN"})
     @DeleteMapping("/{roleId}")
     public ResponseEntity<Void> deleteRole(
             @PathVariable String roleId) {
