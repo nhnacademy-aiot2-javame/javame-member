@@ -3,6 +3,7 @@ package com.nhnacademy.company.repository;
 import com.nhnacademy.company.domain.Company;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -25,7 +26,7 @@ public interface CompanyRepository extends JpaRepository<Company, String> {
      * @param companyName 회사명
      * @return 회사 엔티티
      */
-    Optional<Company> findByCompanyName(String companyName);
+    List<Company> findByCompanyName(String companyName);
 
     /**
      * 주어진 회사 이름이 존재하는지 확인합니다.

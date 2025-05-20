@@ -4,6 +4,7 @@ import com.nhnacademy.common.dto.ErrorResponse;
 import com.nhnacademy.company.common.AlreadyExistCompanyException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -79,6 +80,7 @@ public class GlobalExceptionHandler {
      */
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorResponse> handleValidationExceptions(MethodArgumentNotValidException ex) {
+        log.warn("### MethodArgumentNotValidException CAUGHT! ###"); // 디버깅 로그 추가
         String errorMessage = ex.getBindingResult().getFieldErrors().stream()
                 .map(error -> String.format("[%s] %s", error.getField(), error.getDefaultMessage()))
                 .collect(Collectors.joining("; "));
@@ -92,6 +94,8 @@ public class GlobalExceptionHandler {
         );
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
     }
+
+
 
     /**
      * 위에서 명시적으로 처리되지 않은 모든 종류의 {@link Exception}을 처리하는 최종 핸들러입니다.
@@ -113,4 +117,27 @@ public class GlobalExceptionHandler {
         );
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
     }
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<ErrorResponse> handleIllegalArgumentException(IllegalArgumentException ex) {
+        ErrorResponse errorResponse = new ErrorResponse(
+                LocalDateTime.now(),
+                HttpStatus.BAD_REQUEST.value(),
+                "Invalid Input",
+                ex.getMessage()
+        );
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+    }
+
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<ErrorResponse> handleHttpMessageNotReadable(HttpMessageNotReadableException ex) {
+        ErrorResponse errorResponse = new ErrorResponse(
+                LocalDateTime.now(),
+                HttpStatus.BAD_REQUEST.value(),
+                "Invalid Request Body",
+                "요청 본문이 잘못되었습니다. JSON 형식이 올바른지 확인해주세요."
+        );
+        return ResponseEntity.badRequest().body(errorResponse);
+    }
+
 }
