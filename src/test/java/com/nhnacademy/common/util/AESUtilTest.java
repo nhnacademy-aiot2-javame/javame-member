@@ -18,7 +18,7 @@ import java.security.NoSuchAlgorithmException;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@SpringBootTest
+@SpringBootTest(classes = AESUtil.class)
 class AESUtilTest {
 
     @Test

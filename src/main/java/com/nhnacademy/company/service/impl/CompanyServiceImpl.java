@@ -62,7 +62,7 @@ public class CompanyServiceImpl implements CompanyService {
      *     <li>요청된 Owner 이메일의 시스템 전체 중복 여부를 확인합니다. 중복 시 {@code AlreadyExistMemberException} 발생.</li>
      *     <li>{@link Company#ofNewCompany(String, String, String, String, String)} (String, String, String, String, String)} (가정) 팩토리 메서드를 사용하여 {@code Company} 엔티티를 생성하고 저장합니다.</li>
      *     <li>설정된 {@code ownerRoleId}로 {@code Role} 엔티티를 조회합니다. 없으면 {@code NotExistRoleException} 발생.</li>
-     *     <li>Owner 의 비밀번호를 {@link PasswordEncoder}로 해싱하는 건 AUTH-API에서 이루어집니다.</li>
+     *     <li>Owner 의 비밀번호를 PasswordUtil로 인코딩해서 저장합니다. </li>
      *     <li>{@link Member#ofNewMember(Company, Role, String, String)} 팩토리 메서드를 사용하여 Owner {@code Member} 엔티티를 생성하고 저장합니다.</li>
      * </ol>
      * 모든 과정이 성공하면 등록된 회사 정보를 담은 {@link CompanyResponse}를 반환합니다.

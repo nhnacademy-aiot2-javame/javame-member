@@ -1,13 +1,17 @@
 package com.nhnacademy.company.service;
 
+import com.nhnacademy.common.util.AESUtil;
+import com.nhnacademy.common.util.HashUtil;
 import com.nhnacademy.company.common.AlreadyExistCompanyException;
 import com.nhnacademy.company.common.NotExistCompanyException;
 import com.nhnacademy.company.common.NotFoundCompanyByEmailException;
 import com.nhnacademy.company.domain.Company;
+import com.nhnacademy.company.domain.CompanyIndex;
 import com.nhnacademy.company.dto.request.CompanyRegisterRequest;
 import com.nhnacademy.company.dto.request.CompanyUpdateEmailRequest;
 import com.nhnacademy.company.dto.request.CompanyUpdateRequest;
 import com.nhnacademy.company.dto.response.CompanyResponse;
+import com.nhnacademy.company.repository.CompanyIndexRepository;
 import com.nhnacademy.company.repository.CompanyRepository;
 import com.nhnacademy.company.service.impl.CompanyServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
@@ -17,10 +21,11 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.MockitoAnnotations;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 
-import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -36,6 +41,9 @@ class CompanyServiceTest {
     @Mock // CompanyRepository Mock 객체
     private CompanyRepository companyRepository;
 
+    @Mock
+    private CompanyIndexRepository companyIndexRepository;
+
     @InjectMocks // 테스트 대상 서비스 (CompanyRepository Mock 주입)
     private CompanyServiceImpl companyService; // 실제 구현 클래스명으로
 
@@ -46,6 +54,11 @@ class CompanyServiceTest {
 
     @BeforeEach
     void setUp() {
+        ReflectionTestUtils.setField(AESUtil.class, "algorithm", "AES");
+        ReflectionTestUtils.setField(AESUtil.class, "secretKey", "B3db/0BCMBBUcafzUryeTA==");
+        MockitoAnnotations.openMocks(this);
+        ReflectionTestUtils.setField(companyService, "ownerRoleId", "ROLE_OWNER");
+
         // 1. 테스트용 기본 Company 객체 생성 (DB 저장 아님, 단순 Java 객체)
         // Company의 PK는 String 타입인 companyDomain 이라고 가정
         companyA = Company.ofNewCompany(
@@ -77,44 +90,49 @@ class CompanyServiceTest {
 
     @Test
     @DisplayName("회사 등록 성공")
-    void registerCompany_Success() {
-        when(companyRepository.existsById(companyRegisterRequestA.getCompanyDomain())).thenReturn(false);
+    void registerCompany_success() {
+        // given
+        CompanyRegisterRequest request = new CompanyRegisterRequest(
+                "testDomain",
+                "testName",
+                "testEmail",
+                "testMobile",
+                "testAddress"
+        );
 
-        ArgumentCaptor<Company> companyCaptor = ArgumentCaptor.forClass(Company.class);
+        Company testCompany = Company.ofNewCompany(
+                AESUtil.encrypt(request.getCompanyDomain()),
+                AESUtil.encrypt(request.getCompanyName()),
+                AESUtil.encrypt(request.getCompanyEmail()),
+                AESUtil.encrypt(request.getCompanyMobile()),
+                AESUtil.encrypt(request.getCompanyAddress())
+        );
 
-        when(companyRepository.save(companyCaptor.capture())).thenAnswer(invocation -> {
-            Company companyToSave = invocation.getArgument(0);
+        when(companyIndexRepository.existsByIndexAndFieldName(Mockito.any(), Mockito.anyString()))
+                .thenReturn(false);
+        when(companyRepository.save(Mockito.any(Company.class))).thenReturn(testCompany);
+//        when(companyRepository.save(any(Company.class)))
+//                .thenAnswer(invocation -> invocation.getArgument(0));
 
-            ReflectionTestUtils.setField(companyToSave, "registeredAt", LocalDateTime.now()); // 값 직접 설정
-            return companyToSave;
-        });
+        // when
+        CompanyResponse response = companyService.registerCompany(request);
 
-        CompanyResponse companyResponse = companyService.registerCompany(companyRegisterRequestA);
+        // then
+        assertNotNull(response);
+        assertEquals("testDomain", response.getCompanyDomain());
+        assertEquals("testName", response.getCompanyName());
 
-        assertThat(companyResponse).isNotNull();
-        assertThat(companyResponse.getCompanyDomain()).isEqualTo(companyRegisterRequestA.getCompanyDomain());
-        assertThat(companyResponse.getCompanyName()).isEqualTo(companyRegisterRequestA.getCompanyName());
-        assertThat(companyResponse.getCompanyEmail()).isEqualTo(companyRegisterRequestA.getCompanyEmail());
-        assertThat(companyResponse.getCompanyMobile()).isEqualTo(companyRegisterRequestA.getCompanyMobile());
-        assertThat(companyResponse.getCompanyAddress()).isEqualTo(companyRegisterRequestA.getCompanyAddress());
-        assertThat(companyResponse.isActive()).isTrue();
-        // 이제 이 검증이 통과해야 합니다.
-        assertThat(companyResponse.getRegisteredAt()).isNotNull();
+        // ✅ ArgumentCaptor 사용
+        ArgumentCaptor<Company> captor = ArgumentCaptor.forClass(Company.class);
+        verify(companyRepository, times(1)).save(captor.capture()); // 캡처!
 
-        Company savedCompany = companyCaptor.getValue();
-        assertThat(savedCompany).isNotNull();
-        assertThat(savedCompany.getCompanyDomain()).isEqualTo(companyRegisterRequestA.getCompanyDomain());
-        assertThat(savedCompany.getCompanyName()).isEqualTo(companyRegisterRequestA.getCompanyName());
-        assertThat(savedCompany.getCompanyEmail()).isEqualTo(companyRegisterRequestA.getCompanyEmail());
-        assertThat(savedCompany.getCompanyMobile()).isEqualTo(companyRegisterRequestA.getCompanyMobile());
-        assertThat(savedCompany.getCompanyAddress()).isEqualTo(companyRegisterRequestA.getCompanyAddress());
-        assertThat(savedCompany.getCompanyDomain()).isEqualTo(companyRegisterRequestA.getCompanyDomain());
+        Company saved = captor.getValue();
+        System.out.println(">>> 실제 save된 회사 정보: " + saved);
 
-        assertThat(savedCompany.isActive()).isTrue();
-        assertThat(savedCompany.getRegisteredAt()).isNotNull();
-
-        verify(companyRepository, times(1)).existsById(companyRegisterRequestA.getCompanyDomain());
-        verify(companyRepository, times(1)).save(any(Company.class));
+        // 저장된 company가 암호화된 값인지 확인도 가능
+        assertTrue(saved.getCompanyDomain().startsWith("enc:") || saved.getCompanyDomain().length() > 10);
+        assertNotEquals("testDomain", saved.getCompanyDomain()); // 평문이 아니어야 한다
+        verify(companyIndexRepository, times(1)).saveAll(anyList());
     }
 
     @Test

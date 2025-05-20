@@ -1,6 +1,7 @@
 package com.nhnacademy;
 
 
+import com.nhnacademy.common.annotation.HasRole;
 import com.nhnacademy.member.dto.request.MemberPasswordChangeRequest;
 import com.nhnacademy.member.dto.request.MemberRegisterRequest;
 import com.nhnacademy.member.dto.response.MemberLoginResponse;
@@ -66,10 +67,8 @@ public class MemberController {
      * @return 조회된 회원 정보 ({@link MemberResponse})와 상태 코드 200
      */
     @GetMapping("/{memberNo}")
-    public ResponseEntity<MemberResponse> getMemberById(@PathVariable Long memberNo, @RequestHeader("X-User-Role")String userRole) {
-        if (!userRole.equals("ROLE_ADMIN") && !userRole.equals("ROLE_OWNER") && !userRole.equals("ROLE_USER")) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "접근 권한이 없습니다. ");
-        }
+    @HasRole({"ROLE_ADMIN", "ROLE_OWNER", "ROLE_USER"})
+    public ResponseEntity<MemberResponse> getMemberById(@PathVariable Long memberNo) {
         MemberResponse response = memberService.getMemberById(memberNo);
         return ResponseEntity.ok(response);
     }
@@ -82,15 +81,13 @@ public class MemberController {
      * @return 조회된 회원 정보 ({@link MemberResponse})와 상태 코드 200
      */
     @GetMapping("/member-email/{email}")
+    @HasRole({"ROLE_ADMIN", "ROLE_OWNER", "ROLE_USER"})
     public ResponseEntity<MemberResponse> getMemberByEmail(@PathVariable String email,
-                                                           @RequestHeader("X-User-Email")String userEmail,
-                                                           @RequestHeader("X-User-Role")String userRole) {
+                                                           @RequestHeader("X-USER-EMAIL")String userEmail) {
         if(!email.equals(userEmail)) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "해당 정보를 조회할 권한이 없습니다.");
         }
-        if (!userRole.equals("ROLE_ADMIN") && !userRole.equals("ROLE_OWNER") && !userRole.equals("ROLE_USER")) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "접근 권한이 없습니다. ");
-        }
+
         MemberResponse response = memberService.getMemberByEmail(email);
         return ResponseEntity.ok(response);
     }
@@ -106,15 +103,12 @@ public class MemberController {
      * @return 상태 코드 204 (No Content)
      */
     @PutMapping("/{memberNo}/password")
+    @HasRole({"ROLE_ADMIN", "ROLE_OWNER", "ROLE_USER"})
     public ResponseEntity<Void> changeMemberPassword(
             @PathVariable Long memberNo,
             @Validated @RequestBody MemberPasswordChangeRequest request,
-            @RequestHeader("X-User-Email")String userEmail,
-            @RequestHeader("X-User-Role")String userRole) {
+            @RequestHeader("X-USER-EMAIL")String userEmail) {
 
-        if (!userRole.equals("ROLE_ADMIN") && !userRole.equals("ROLE_OWNER") && !userRole.equals("ROLE_USER")) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "접근 권한이 없습니다. ");
-        }
         MemberResponse memberResponse = memberService.getMemberByEmail(userEmail);
         if(!memberResponse.getMemberNo().equals(memberNo)) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "접근 권한이 없습니다. ");
@@ -131,14 +125,11 @@ public class MemberController {
      * @return 상태 코드 204 (No Content)
      */
     @DeleteMapping("/{memberNo}")
+    @HasRole({"ROLE_ADMIN", "ROLE_OWNER"})
     public ResponseEntity<Void> deleteMember(
             @PathVariable Long memberNo,
-            @RequestHeader("X-User-Email")String userEmail,
-            @RequestHeader("X-User-Role")String userRole) {
+            @RequestHeader("X-USER-EMAIL")String userEmail) {
 
-        if (!userRole.equals("ROLE_ADMIN") && !userRole.equals("ROLE_OWNER") && !userRole.equals("ROLE_USER")) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "접근 권한이 없습니다. ");
-        }
         MemberResponse memberResponse = memberService.getMemberByEmail(userEmail);
         if(!memberResponse.getMemberNo().equals(memberNo)) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "해당 정보를 삭제할 권한이 없습니다.");
@@ -156,14 +147,11 @@ public class MemberController {
      * @return 로그인 관련 정보 ({@link MemberLoginResponse})와 상태 코드 200
      */
     @GetMapping("/login-info/{email}")
+    @HasRole({"ROLE_ADMIN", "ROLE_OWNER", "ROLE_USER"})
     public ResponseEntity<MemberLoginResponse> getLoginInfoByEmail(
             @PathVariable String email,
-            @RequestHeader("X-User-Email")String userEmail,
-            @RequestHeader("X-User-Role")String userRole) {
+            @RequestHeader("X-USER-EMAIL")String userEmail) {
 
-        if (!userRole.equals("ROLE_ADMIN") && !userRole.equals("ROLE_OWNER") && !userRole.equals("ROLE_USER")) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "접근 권한이 없습니다. ");
-        }
         if(!email.equals(userEmail)) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "해당 정보에 대한 접근 권한이 없습니다. ");
         }

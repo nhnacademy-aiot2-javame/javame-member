@@ -10,7 +10,9 @@ import com.nhnacademy.company.repository.CompanyIndexRepository;
 import com.nhnacademy.company.repository.CompanyRepository;
 import com.nhnacademy.member.common.AlreadyExistMemberException;
 import com.nhnacademy.member.common.NotExistMemberException;
+import com.nhnacademy.member.common.NotMatchesPasswordException;
 import com.nhnacademy.member.domain.Member;
+import com.nhnacademy.member.domain.MemberIndex;
 import com.nhnacademy.member.dto.request.MemberPasswordChangeRequest;
 import com.nhnacademy.member.dto.request.MemberRegisterRequest;
 import com.nhnacademy.member.dto.response.MemberLoginResponse;
@@ -89,7 +91,7 @@ public class MemberServiceImpl implements MemberService {
         CompanyIndex companyIndex = companyIndexRepository.findByIndex(index).orElseThrow(
                 () -> new NotExistCompanyException("존재하지 않는 회사 도메인입니다. " + request.getCompanyDomain()));
 
-        //인덱스 레포지토리에서 찾은 company를 통해 회사 레포지토리 검색
+        //인덱스 레포지토리에서 찾은 companyIndex를 통해 해당하는 필드값을 가져와 회사 레포지토리에서 검색
         Company company = companyRepository.findById(companyIndex.getFieldValue())
                 .orElseThrow(() -> {
                     log.warn("회원 등록 실패: 존재하지 않는 회사 도메인 {}", request.getCompanyDomain());
@@ -120,38 +122,43 @@ public class MemberServiceImpl implements MemberService {
 
     @Override
     public MemberResponse registerOwner(MemberRegisterRequest request) {
-        log.debug("회원 등록 요청 처리 시작: 이메일 {}", request.getMemberEmail());
+        log.debug("소유주 등록 요청 처리 시작: 이메일 {}", request.getMemberEmail());
 
-        // 이메일 중복 확인
-        if (memberRepository.existsByMemberEmail(request.getMemberEmail())) {
-            log.warn("회원 등록 실패: 이미 존재하는 이메일 {}", request.getMemberEmail());
+        String hashKey = HashUtil.sha256Hex(request.getMemberEmail());
+        if (memberIndexRepository.existsByIndexAndFieldName(hashKey, "email")) {
+            log.warn("소유주 등록 실패: 이미 존재하는 이메일 {}", request.getMemberEmail());
             throw new AlreadyExistMemberException("이미 존재하는 이메일 입니다 : " + request.getMemberEmail());
         }
 
+        String index = HashUtil.sha256Hex(request.getCompanyDomain());
+        //인덱스 레포지토리로 존재하는지 검색
+        CompanyIndex companyIndex = companyIndexRepository.findByIndex(index).orElseThrow(
+                () -> new NotExistCompanyException("존재하지 않는 회사 도메인입니다. " + request.getCompanyDomain()));
+
         // 소속 회사 조회 (반드시 존재해야 함)
-        Company company = companyRepository.findById(request.getCompanyDomain())
+        Company company = companyRepository.findById(companyIndex.getFieldValue())
                 .orElseThrow(() -> {
-                    log.warn("회원 등록 실패: 존재하지 않는 회사 도메인 {}", request.getCompanyDomain());
+                    log.warn("소유주 등록 실패: 존재하지 않는 회사 도메인 {}", request.getCompanyDomain());
                     return new NotExistCompanyException("가입하려는 회사 도메인('"
                             + request.getCompanyDomain()
                             + "')을 찾을 수 없습니다. 회사 등록을 먼저 진행해주세요.");
                 });
-        log.info("회사 확인됨: '{}'. 신규 멤버 등록 진행.", company.getCompanyDomain());
+        log.info("회사 확인됨: '{}'. 신규 소유주 등록 진행.", company.getCompanyDomain());
 
         // 기본 사용자 역할 조회
         Role userRole = roleRepository.findById(defaultOwnerRoleId)
                 .orElseThrow(() -> {
-                    log.error("회원 등록 실패: 시스템 기본 역할 '{}' 없음.", defaultOwnerRoleId);
+                    log.error("소유주 등록 실패: 시스템 기본 역할 '{}' 없음.", defaultOwnerRoleId);
                     return new NotExistRoleException("시스템 기본 역할("
                             + defaultOwnerRoleId
                             + ") 을 찾을 수 없습니다.");
                 });
-        log.info("신규 멤버에게 역할 '{}' 할당 예정.", defaultOwnerRoleId);
+        log.info("신규 소유주에게 역할 '{}' 할당 예정.", defaultOwnerRoleId);
 
         // Member 엔티티 생성 및 저장
-        Member newMember = Member.ofNewMember(company, userRole, request.getMemberEmail(), request.getMemberPassword());
+        Member newMember = Member.ofNewMember(company, userRole, AESUtil.encrypt(request.getMemberEmail()), PasswordUtil.encode(request.getMemberPassword()));
         Member savedMember = memberRepository.save(newMember);
-        log.info("회원 등록 성공: 이메일 '{}', ID '{}'", savedMember.getMemberEmail(), savedMember.getMemberNo());
+        log.info("소유주 등록 성공: 이메일 '{}', ID '{}'", savedMember.getMemberEmail(), savedMember.getMemberNo());
 
         // 응답 DTO 변환 후 반환
         return mapToMemberResponse(savedMember);
@@ -175,10 +182,8 @@ public class MemberServiceImpl implements MemberService {
     @Override
     @Transactional(readOnly = true)
     public MemberResponse getMemberByEmail(String memberEmail) {
-        log.debug("회원 정보 조회 요청: email {}", memberEmail);
-        Member member = memberRepository.findByMemberEmail(memberEmail)
-                .orElseThrow(() -> new NotExistMemberException(
-                        String.format("%s로 회원을 찾지 못했습니다.", memberEmail)));
+        Member member = mapToMember(memberEmail);
+
         log.debug("회원 정보 조회 성공: email {}", memberEmail);
         return mapToMemberResponse(member);
     }
@@ -197,14 +202,13 @@ public class MemberServiceImpl implements MemberService {
         Member member = findMemberByIdOrThrow(memberNo);
 
         // 현재 비밀번호 일치 확인
-        if (!Objects.equals(request.getCurrentPassword(), member.getMemberPassword())) {
-            log.warn("비밀번호 변경 실패: 현재 비밀번호 불일치. ID {}", memberNo);
-            throw new IllegalArgumentException("현재 비밀번호가 일치하지 않습니다.");
+        if (!PasswordUtil.matches(request.getCurrentPassword(), member.getMemberPassword())) {
+            throw new NotMatchesPasswordException(memberNo);
         }
 
         // 새 비밀번호 해싱 및 엔티티 업데이트
-        member.changePassword(request.getNewPassword());
-        log.info("회원 비밀번호 변경 성공: ID {}", memberNo);
+        member.changePassword(PasswordUtil.encode(request.getNewPassword()));
+        log.debug("회원 비밀번호 변경 성공: ID {}", memberNo);
     }
 
     /**
@@ -234,11 +238,7 @@ public class MemberServiceImpl implements MemberService {
     @Transactional(readOnly = true)
     public MemberLoginResponse getLoginInfoByEmail(String email) {
         log.debug("로그인 정보 조회 요청: 이메일 {}", email);
-        Member member = memberRepository.findByMemberEmail(email)
-                .orElseThrow(() -> {
-                    log.warn("로그인 정보 조회 실패: 존재하지 않는 이메일 {}", email);
-                    return new NotExistMemberException("해당 이메일의 회원을 찾을 수 없습니다: " + email);
-                });
+        Member member = mapToMember(email);
 
         // 활성(탈퇴하지 않은) 회원인지 확인
         if (!member.isActive()) {
@@ -250,7 +250,7 @@ public class MemberServiceImpl implements MemberService {
         // 로그인 정보 DTO 생성 및 반환
         return new MemberLoginResponse(
                 member.getMemberNo(),
-                member.getMemberEmail(),
+                AESUtil.decrypt(member.getMemberEmail()),
                 member.getMemberPassword(),
                 member.getRole() != null ? member.getRole().getRoleId() : null // 역할 정보 포함
         );
@@ -261,11 +261,9 @@ public class MemberServiceImpl implements MemberService {
      */
     @Override
     public void updateLoginAt(String memberEmail) {
-        Member member = memberRepository.findByMemberEmail(memberEmail)
-                .orElseThrow(() -> new NotExistMemberException(String.format("%s 에 해당하는 멤버는 존재하지 않습니다.", memberEmail)));
+        Member member = mapToMember(memberEmail);
         member.updateLastLoginTime();
     }
-
 
     /**
      * 주어진 ID로 {@link Member}를 조회하고, 존재하지 않으면 {@code NotExistMemberException}을 발생시키는 내부 헬퍼 메서드입니다.
@@ -302,5 +300,17 @@ public class MemberServiceImpl implements MemberService {
                 companyDomain,
                 roleId
         );
+    }
+
+    private Member mapToMember(String filed) {
+        if (filed == null || filed.isBlank()) {
+            throw new IllegalArgumentException("filed 값이 empty.");
+        }
+        MemberIndex memberIndex = memberIndexRepository.findByIndex(HashUtil.sha256Hex(filed)).orElseThrow(
+                ()-> new NotExistMemberException(String.format("%s 에 해당하는 멤버는 존재하지 않습니다.", filed)));
+
+        return memberRepository.findByMemberEmail(memberIndex.getFieldValue())
+                .orElseThrow(() -> new NotExistMemberException(
+                        String.format("%s로 저장된 회원이 없습니다.", filed)));
     }
 }
