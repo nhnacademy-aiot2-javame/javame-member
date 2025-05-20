@@ -24,6 +24,8 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.Collections;
@@ -38,7 +40,7 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class CompanyServiceTest {
 
-    @Mock // CompanyRepository Mock 객체
+    @Mock
     private CompanyRepository companyRepository;
 
     @Mock
@@ -91,31 +93,21 @@ class CompanyServiceTest {
     @Test
     @DisplayName("회사 등록 성공")
     void registerCompany_success() {
-        // given
-        CompanyRegisterRequest request = new CompanyRegisterRequest(
-                "testDomain",
-                "testName",
-                "testEmail",
-                "testMobile",
-                "testAddress"
-        );
-
         Company testCompany = Company.ofNewCompany(
-                AESUtil.encrypt(request.getCompanyDomain()),
-                AESUtil.encrypt(request.getCompanyName()),
-                AESUtil.encrypt(request.getCompanyEmail()),
-                AESUtil.encrypt(request.getCompanyMobile()),
-                AESUtil.encrypt(request.getCompanyAddress())
+                AESUtil.encrypt(companyRegisterRequestA.getCompanyDomain()),
+                AESUtil.encrypt(companyRegisterRequestA.getCompanyName()),
+                AESUtil.encrypt(companyRegisterRequestA.getCompanyEmail()),
+                AESUtil.encrypt(companyRegisterRequestA.getCompanyMobile()),
+                AESUtil.encrypt(companyRegisterRequestA.getCompanyAddress())
         );
 
         when(companyIndexRepository.existsByIndexAndFieldName(Mockito.any(), Mockito.anyString()))
                 .thenReturn(false);
-        when(companyRepository.save(Mockito.any(Company.class))).thenReturn(testCompany);
-//        when(companyRepository.save(any(Company.class)))
-//                .thenAnswer(invocation -> invocation.getArgument(0));
+        when(companyRepository.save(any(Company.class)))
+                .thenAnswer(invocation -> invocation.getArgument(0));
 
         // when
-        CompanyResponse response = companyService.registerCompany(request);
+        CompanyResponse response = companyService.registerCompany(companyRegisterRequestA);
 
         // then
         assertNotNull(response);

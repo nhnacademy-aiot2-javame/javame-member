@@ -99,6 +99,7 @@ public class CompanyServiceImpl implements CompanyService {
                 new CompanyIndex(addressHash, "address", encryptedAddress)
         );
         companyIndexRepository.saveAll(indices);
+        log.debug("인덱스 테이블에 저장 완료");
 
         // 신규 회사 생성
         Company newCompany = Company.ofNewCompany(
@@ -108,8 +109,10 @@ public class CompanyServiceImpl implements CompanyService {
                 encryptedMobile,
                 encryptedAddress
         );
+        log.debug("신규 회사 생성: {}", newCompany);
+
         Company savedCompany = companyRepository.save(newCompany);
-        log.debug("신규 회사 등록 완료: {}", savedCompany);
+        log.debug("등록된 회사: {}", savedCompany);
 
         return mapToCompanyResponse(savedCompany);
     }
