@@ -110,7 +110,6 @@ public class CompanyServiceImpl implements CompanyService {
                 encryptedAddress
         );
         log.debug("신규 회사 생성: {}", newCompany);
-
         Company savedCompany = companyRepository.save(newCompany);
         log.debug("등록된 회사: {}", savedCompany);
 

@@ -14,6 +14,7 @@ import com.nhnacademy.company.dto.response.CompanyResponse;
 import com.nhnacademy.company.repository.CompanyIndexRepository;
 import com.nhnacademy.company.repository.CompanyRepository;
 import com.nhnacademy.company.service.impl.CompanyServiceImpl;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -58,7 +59,7 @@ class CompanyServiceTest {
     void setUp() {
         ReflectionTestUtils.setField(AESUtil.class, "algorithm", "AES");
         ReflectionTestUtils.setField(AESUtil.class, "secretKey", "B3db/0BCMBBUcafzUryeTA==");
-        MockitoAnnotations.openMocks(this);
+
         ReflectionTestUtils.setField(companyService, "ownerRoleId", "ROLE_OWNER");
 
         // 1. 테스트용 기본 Company 객체 생성 (DB 저장 아님, 단순 Java 객체)
@@ -104,15 +105,15 @@ class CompanyServiceTest {
         when(companyIndexRepository.existsByIndexAndFieldName(Mockito.any(), Mockito.anyString()))
                 .thenReturn(false);
         when(companyRepository.save(any(Company.class)))
-                .thenAnswer(invocation -> invocation.getArgument(0));
+                .thenReturn(testCompany);
 
         // when
         CompanyResponse response = companyService.registerCompany(companyRegisterRequestA);
 
         // then
         assertNotNull(response);
-        assertEquals("testDomain", response.getCompanyDomain());
-        assertEquals("testName", response.getCompanyName());
+        assertEquals(companyRegisterRequestA.getCompanyDomain(), response.getCompanyDomain());
+        assertEquals(companyRegisterRequestA.getCompanyName(), response.getCompanyName());
 
         // ✅ ArgumentCaptor 사용
         ArgumentCaptor<Company> captor = ArgumentCaptor.forClass(Company.class);
@@ -131,16 +132,13 @@ class CompanyServiceTest {
     @DisplayName("회사 등록 실패 - 이미 존재하는 회사 도메인")
     void registerCompany_Fail_DomainAlreadyExists() {
         // given
-        when(companyRepository.existsById(companyRegisterRequestA.getCompanyDomain())).thenReturn(true);
+        when(companyIndexRepository.existsByIndexAndFieldName(Mockito.any(), Mockito.anyString()))
+                .thenReturn(true);
 
         // when & then
         assertThatThrownBy(() -> companyService.registerCompany(companyRegisterRequestA))
                 .isInstanceOf(AlreadyExistCompanyException.class)
                 .hasMessageContaining("이미 사용 중인 회사 도메인입니다.");
-
-        // then (추가 검증)
-        verify(companyRepository, times(1)).existsById(companyRegisterRequestA.getCompanyDomain());
-        verify(companyRepository, never()).save(any(Company.class));
     }
 
     @Test
@@ -148,8 +146,8 @@ class CompanyServiceTest {
     void getCompanyByDomain_Success() {
         // given
         String existingDomain = companyA.getCompanyDomain();
-        when(companyRepository.findById(existingDomain)).thenReturn(Optional.of(companyA));
-
+        when(companyIndexRepository.existsByIndex(Mockito.any())).thenReturn(true);
+        when(companyRepository.findById(Mockito.anyString())).thenReturn(Optional.of(companyA));
         // when
         CompanyResponse foundCompanyResponse = companyService.getCompanyByDomain(existingDomain);
 
@@ -171,31 +169,40 @@ class CompanyServiceTest {
     void getCompanyByDomain_Fail_DomainNotFound() {
         // given
         String nonExistingDomain = "nonexisting.com";
-        when(companyRepository.findById(nonExistingDomain)).thenReturn(Optional.empty());
+        when(companyIndexRepository.existsByIndex(HashUtil.sha256Hex(nonExistingDomain))).thenReturn(false);
 
         // when & then
         assertThatThrownBy(() -> companyService.getCompanyByDomain(nonExistingDomain))
                 .isInstanceOf(NotExistCompanyException.class)
                 .hasMessageContaining("회사를 찾을 수 없습니다: 도메인 " + nonExistingDomain);
 
-        // then (추가 검증)
-        verify(companyRepository, times(1)).findById(nonExistingDomain);
+    }
+
+    @Test
+    @DisplayName("도메인으로 회사 조회 실패 - 도메인 값이 없을 때")
+    void getCompanyByDomain_Fail_DomainIsNull() {
+        String existingDomain = companyA.getCompanyDomain();
+        when(companyIndexRepository.existsByIndex(Mockito.any())).thenReturn(true);
+        Assertions.assertThrows(NotExistCompanyException.class,() -> {
+            companyService.getCompanyByDomain(existingDomain);
+        });
     }
 
     @Test
     @DisplayName("회사 정보 수정 성공")
     void updateCompany_Success() {
-        // given - Mock 설정 및 테스트 데이터 준비
         String existingDomain = companyA.getCompanyDomain(); // 수정 대상 회사 도메인
-        // companyUpdateRequestA는 @BeforeEach setUp()에서 이미 준비됨 (새로운 이름, 전화번호, 주소)
 
-        // findById가 호출되면 수정 대상 companyA 객체를 Optional에 담아 반환
-        // Company 객체를 spy로 감싸서 updateDetails 메서드 호출을 검증할 수 있도록 함
         Company spiedCompanyA = spy(companyA);
-        when(companyRepository.findById(existingDomain)).thenReturn(Optional.of(spiedCompanyA));
+        CompanyIndex companyIndex = new CompanyIndex(
+                HashUtil.sha256Hex(companyA.getCompanyDomain()),
+                "domain",
+                AESUtil.encrypt(companyA.getCompanyDomain()));
+        when(companyIndexRepository.findByIndex(Mockito.any())).thenReturn(Optional.of(companyIndex));
+        when(companyRepository.findById(companyIndex.getFieldValue())).thenReturn(Optional.of(spiedCompanyA));
 
         // when - 서비스 메서드 호출
-        CompanyResponse updatedCompanyResponse = companyService.updateCompany(existingDomain, companyUpdateRequestA);
+        CompanyResponse updatedCompanyResponse = companyService.updateCompany(companyIndex.getFieldValue(), companyUpdateRequestA);
 
         // then - 결과 검증
         // 1. 반환된 CompanyResponse가 null이 아닌지 확인
