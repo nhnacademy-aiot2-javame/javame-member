@@ -4,7 +4,6 @@ import com.nhnacademy.common.util.AESUtil;
 import com.nhnacademy.common.util.HashUtil;
 import com.nhnacademy.company.common.AlreadyExistCompanyException;
 import com.nhnacademy.company.common.NotExistCompanyException;
-import com.nhnacademy.company.common.NotFoundCompanyByEmailException;
 import com.nhnacademy.company.domain.Company;
 import com.nhnacademy.company.domain.CompanyIndex;
 import com.nhnacademy.company.dto.request.CompanyRegisterRequest;
@@ -23,10 +22,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.MockitoAnnotations;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.Collections;
@@ -146,8 +142,24 @@ class CompanyServiceTest {
     void getCompanyByDomain_Success() {
         // given
         String existingDomain = companyA.getCompanyDomain();
+        Company company = Company.ofNewCompany(
+                AESUtil.encrypt(companyRegisterRequestA.getCompanyDomain()),
+                AESUtil.encrypt(companyRegisterRequestA.getCompanyName()),
+                AESUtil.encrypt(companyRegisterRequestA.getCompanyEmail()),
+                AESUtil.encrypt(companyRegisterRequestA.getCompanyMobile()),
+                AESUtil.encrypt(companyRegisterRequestA.getCompanyAddress())
+        );
+
+        String hashKey = HashUtil.sha256Hex(existingDomain);
+        CompanyIndex testCompany = new CompanyIndex(
+                hashKey,
+               "domain",
+                AESUtil.encrypt(companyA.getCompanyDomain())
+        );
+
         when(companyIndexRepository.existsByIndex(Mockito.any())).thenReturn(true);
-        when(companyRepository.findById(Mockito.anyString())).thenReturn(Optional.of(companyA));
+        when(companyIndexRepository.findByIndex(hashKey)).thenReturn(Optional.of(testCompany));
+        when(companyRepository.findById(testCompany.getFieldValue())).thenReturn(Optional.of(company));
         // when
         CompanyResponse foundCompanyResponse = companyService.getCompanyByDomain(existingDomain);
 
@@ -161,7 +173,7 @@ class CompanyServiceTest {
         assertThat(foundCompanyResponse.isActive()).isEqualTo(companyA.isActive());
         assertThat(foundCompanyResponse.getRegisteredAt()).isEqualTo(companyA.getRegisteredAt());
 
-        verify(companyRepository, times(1)).findById(existingDomain);
+        verify(companyRepository, times(1)).findById(testCompany.getFieldValue());
     }
 
     @Test
@@ -192,17 +204,24 @@ class CompanyServiceTest {
     @DisplayName("회사 정보 수정 성공")
     void updateCompany_Success() {
         String existingDomain = companyA.getCompanyDomain(); // 수정 대상 회사 도메인
-
-        Company spiedCompanyA = spy(companyA);
+        String hashKey = HashUtil.sha256Hex(existingDomain);
         CompanyIndex companyIndex = new CompanyIndex(
-                HashUtil.sha256Hex(companyA.getCompanyDomain()),
+                hashKey,
                 "domain",
-                AESUtil.encrypt(companyA.getCompanyDomain()));
-        when(companyIndexRepository.findByIndex(Mockito.any())).thenReturn(Optional.of(companyIndex));
-        when(companyRepository.findById(companyIndex.getFieldValue())).thenReturn(Optional.of(spiedCompanyA));
+                AESUtil.encrypt(companyA.getCompanyDomain())
+        );
+        Company company = spy(Company.ofNewCompany(
+                AESUtil.encrypt(companyRegisterRequestA.getCompanyDomain()),
+                AESUtil.encrypt(companyRegisterRequestA.getCompanyName()),
+                AESUtil.encrypt(companyRegisterRequestA.getCompanyEmail()),
+                AESUtil.encrypt(companyRegisterRequestA.getCompanyMobile()),
+                AESUtil.encrypt(companyRegisterRequestA.getCompanyAddress())
+        ));
+        when(companyIndexRepository.findByIndex(hashKey)).thenReturn(Optional.of(companyIndex));
+        when(companyRepository.findById(companyIndex.getFieldValue())).thenReturn(Optional.of(company));
 
         // when - 서비스 메서드 호출
-        CompanyResponse updatedCompanyResponse = companyService.updateCompany(companyIndex.getFieldValue(), companyUpdateRequestA);
+        CompanyResponse updatedCompanyResponse = companyService.updateCompany(existingDomain, companyUpdateRequestA);
 
         // then - 결과 검증
         // 1. 반환된 CompanyResponse가 null이 아닌지 확인
@@ -218,16 +237,16 @@ class CompanyServiceTest {
         assertThat(updatedCompanyResponse.getRegisteredAt()).isEqualTo(companyA.getRegisteredAt());
 
 
-        // 3. spiedCompanyA 객체의 updateDetails 메서드가 올바른 인자로 호출되었는지 검증
-        verify(spiedCompanyA, times(1)).updateDetails(
-                companyUpdateRequestA.getCompanyName(),
-                companyUpdateRequestA.getCompanyMobile(),
-                companyUpdateRequestA.getCompanyAddress()
+        // 3. spiedCompany 객체의 updateDetails 메서드가 올바른 인자로 호출되었는지 검증
+        verify(company, times(1)).updateDetails(
+                AESUtil.encrypt(companyUpdateRequestA.getCompanyName()),
+                AESUtil.encrypt(companyUpdateRequestA.getCompanyMobile()),
+                AESUtil.encrypt(companyUpdateRequestA.getCompanyAddress())
         );
         // 4. JPA 변경 감지로 동작하므로, companyRepository.save()는 호출되지 않음을 확인 (선택적)
         verify(companyRepository, never()).save(any(Company.class));
         // 5. findById는 1번 호출됨
-        verify(companyRepository, times(1)).findById(existingDomain);
+        verify(companyRepository, times(1)).findById(companyIndex.getFieldValue());
     }
 
     @Test
@@ -236,7 +255,7 @@ class CompanyServiceTest {
         // given - Mock 설정
         String nonExistingDomain = "nonexisting.com";
         // companyUpdateRequestA는 @BeforeEach setUp()에서 이미 준비됨
-        when(companyRepository.findById(nonExistingDomain)).thenReturn(Optional.empty());
+        when(companyIndexRepository.findByIndex(Mockito.any())).thenReturn(Optional.empty());
 
         // when & then - 예외 발생 검증
         assertThatThrownBy(() -> companyService.updateCompany(nonExistingDomain, companyUpdateRequestA))
@@ -244,7 +263,7 @@ class CompanyServiceTest {
                 .hasMessageContaining("회사를 찾을 수 없습니다: 도메인 " + nonExistingDomain);
 
         // then (추가 검증)
-        verify(companyRepository, times(1)).findById(nonExistingDomain);
+        verify(companyIndexRepository, times(1)).findByIndex(Mockito.any());
         verify(companyRepository, never()).save(any(Company.class));
     }
 
@@ -255,15 +274,27 @@ class CompanyServiceTest {
         String existingDomain = companyA.getCompanyDomain();
         String currentEmail = companyA.getCompanyEmail(); // 현재 회사 이메일
         String newEmail = "new_contact@nhnacademy.com";   // 변경할 새 이메일
+        String hashKey = HashUtil.sha256Hex(existingDomain);
+        CompanyIndex companyIndex = new CompanyIndex(
+                hashKey,
+                "domain",
+                AESUtil.encrypt(companyA.getCompanyDomain())
+        );
+        Company company = spy(Company.ofNewCompany(
+                AESUtil.encrypt(companyRegisterRequestA.getCompanyDomain()),
+                AESUtil.encrypt(companyRegisterRequestA.getCompanyName()),
+                AESUtil.encrypt(companyRegisterRequestA.getCompanyEmail()),
+                AESUtil.encrypt(companyRegisterRequestA.getCompanyMobile()),
+                AESUtil.encrypt(companyRegisterRequestA.getCompanyAddress())
+        ));
 
         CompanyUpdateEmailRequest updateEmailRequest = new CompanyUpdateEmailRequest(currentEmail, newEmail);
 
-        // 1. 현재 이메일로 회사가 존재하는지 확인: existsByCompanyEmail(currentEmail) -> true
-        when(companyRepository.existsByCompanyEmail(currentEmail)).thenReturn(true);
+        // 1. 현재 이메일로 회사가 존재하는지 확인: findByIndex(AESUtil.encrypt(currentEmail))
+        when(companyIndexRepository.findByIndex(hashKey)).thenReturn(Optional.of(companyIndex));
 
-        // 2. 도메인으로 회사 조회: findById(existingDomain) -> companyA 반환 (spy로 감싸서 메서드 호출 검증)
-        Company spiedCompanyA = spy(companyA);
-        when(companyRepository.findById(existingDomain)).thenReturn(Optional.of(spiedCompanyA));
+        // 2. 도메인으로 회사 조회: findById(existingDomain) -> company 반환 (spy로 감싸서 메서드 호출 검증)
+        when(companyRepository.findById(companyIndex.getFieldValue())).thenReturn(Optional.ofNullable(company));
 
         // when - 서비스 메서드 호출
         CompanyResponse updatedCompanyResponse = companyService.updateCompanyEmail(existingDomain, updateEmailRequest);
@@ -276,15 +307,15 @@ class CompanyServiceTest {
         assertThat(updatedCompanyResponse.getCompanyName()).isEqualTo(companyA.getCompanyName());
 
         // Company 객체의 updateEmail 메서드가 올바른 인자로 호출되었는지 검증
-        verify(spiedCompanyA, times(1)).updateEmail(newEmail);
+        verify(company, times(1)).updateEmail(AESUtil.encrypt(newEmail));
         // Mock Repository 메서드 호출 검증
-        verify(companyRepository, times(1)).existsByCompanyEmail(currentEmail);
-        verify(companyRepository, times(1)).findById(existingDomain);
+        verify(companyIndexRepository, times(1)).findByIndex(hashKey);
+        verify(companyRepository, times(1)).findById(companyIndex.getFieldValue());
         verify(companyRepository, never()).save(any(Company.class)); // 변경 감지로 동작
     }
 
     @Test
-    @DisplayName("회사 이메일 수정 실패 - 현재 이메일로 회사를 찾을 수 없음")
+    @DisplayName("회사 이메일 수정 실패 - 회사 도메인 없음")
     void updateCompanyEmail_Fail_CurrentEmailNotFound() {
         // given
         String existingDomain = companyA.getCompanyDomain();
@@ -294,44 +325,19 @@ class CompanyServiceTest {
         CompanyUpdateEmailRequest updateEmailRequest = new CompanyUpdateEmailRequest(nonExistingCurrentEmail, newEmail);
 
         // 현재 이메일로 회사가 존재하지 않음: existsByCompanyEmail(nonExistingCurrentEmail) -> false
-        when(companyRepository.existsByCompanyEmail(nonExistingCurrentEmail)).thenReturn(false);
+        when(companyIndexRepository.findByIndex(Mockito.any())).thenReturn(Optional.empty());
 
         // when & then - 예외 발생 검증
-        assertThatThrownBy(() -> companyService.updateCompanyEmail(existingDomain, updateEmailRequest))
-                .isInstanceOf(NotFoundCompanyByEmailException.class)
-                .hasMessageContaining(nonExistingCurrentEmail); // 예외 메시지 확인 (서비스 코드 참고)
+        Assertions.assertThrows(NotExistCompanyException.class, ()->{
+            companyService.updateCompanyEmail(existingDomain, updateEmailRequest);
+        });
 
         // Mock Repository 메서드 호출 검증
-        verify(companyRepository, times(1)).existsByCompanyEmail(nonExistingCurrentEmail);
+        verify(companyIndexRepository, times(1)).findByIndex(Mockito.any());
         verify(companyRepository, never()).findById(anyString()); // findById는 호출되지 않아야 함
         verify(companyRepository, never()).save(any(Company.class));
     }
 
-    @Test
-    @DisplayName("회사 이메일 수정 실패 - 존재하지 않는 회사 도메인")
-    void updateCompanyEmail_Fail_CompanyDomainNotFound() {
-        // given
-        String nonExistingDomain = "nonexisting.com";
-        String currentEmail = companyA.getCompanyEmail(); // 현재 이메일은 존재한다고 가정
-        String newEmail = "new@email.com";
-
-        CompanyUpdateEmailRequest updateEmailRequest = new CompanyUpdateEmailRequest(currentEmail, newEmail);
-
-        // 현재 이메일로 회사는 존재함: existsByCompanyEmail(currentEmail) -> true
-        when(companyRepository.existsByCompanyEmail(currentEmail)).thenReturn(true);
-        // 하지만 업데이트 대상 회사 도메인이 존재하지 않음: findById(nonExistingDomain) -> Optional.empty()
-        when(companyRepository.findById(nonExistingDomain)).thenReturn(Optional.empty());
-
-        // when & then - 예외 발생 검증
-        assertThatThrownBy(() -> companyService.updateCompanyEmail(nonExistingDomain, updateEmailRequest))
-                .isInstanceOf(NotExistCompanyException.class) // findCompanyByIdOrThrow 내부에서 발생
-                .hasMessageContaining("회사를 찾을 수 없습니다: 도메인 " + nonExistingDomain);
-
-        // Mock Repository 메서드 호출 검증
-        verify(companyRepository, times(1)).existsByCompanyEmail(currentEmail);
-        verify(companyRepository, times(1)).findById(nonExistingDomain);
-        verify(companyRepository, never()).save(any(Company.class));
-    }
 
 
     @Test
@@ -339,18 +345,30 @@ class CompanyServiceTest {
     void deactivateCompany_Success() {
         // given
         String existingDomain = companyA.getCompanyDomain();
-        // 초기 상태는 active=true 라고 가정 (setUp에서 설정됨)
-        Company spiedCompanyA = spy(companyA); // companyA는 active=true 상태
-        when(companyRepository.findById(existingDomain)).thenReturn(Optional.of(spiedCompanyA));
+        String hashKey = HashUtil.sha256Hex(existingDomain);
+        CompanyIndex companyIndex = new CompanyIndex(
+                hashKey,
+                "domain",
+                AESUtil.encrypt(companyA.getCompanyDomain())
+        );
+        Company company = spy(Company.ofNewCompany(
+                AESUtil.encrypt(companyA.getCompanyDomain()),
+                AESUtil.encrypt(companyA.getCompanyName()),
+                AESUtil.encrypt(companyA.getCompanyEmail()),
+                AESUtil.encrypt(companyA.getCompanyMobile()),
+                AESUtil.encrypt(companyA.getCompanyAddress())
+        ));
+        when(companyIndexRepository.findByIndex(hashKey)).thenReturn(Optional.of(companyIndex));
+        when(companyRepository.findById(companyIndex.getFieldValue())).thenReturn(Optional.of(company));
 
         // when
         companyService.deactivateCompany(existingDomain);
 
         // then
-        verify(spiedCompanyA, times(1)).deactivate(); // Company의 deactivate 메서드 호출 검증
+        verify(company, times(1)).deactivate(); // Company의 deactivate 메서드 호출 검증
         // 실제 spiedCompanyA 객체의 active 상태가 false로 변경되었는지 확인 가능 (spy는 실제 객체 기반)
-        assertThat(spiedCompanyA.isActive()).isFalse();
-        verify(companyRepository, times(1)).findById(existingDomain);
+        assertThat(company.isActive()).isFalse();
+        verify(companyRepository, times(1)).findById(companyIndex.getFieldValue());
         verify(companyRepository, never()).save(any(Company.class)); // 변경 감지로 동작
     }
 
@@ -359,14 +377,14 @@ class CompanyServiceTest {
     void deactivateCompany_Fail_DomainNotFound() {
         // given
         String nonExistingDomain = "nonexisting.com";
-        when(companyRepository.findById(nonExistingDomain)).thenReturn(Optional.empty());
+        when(companyIndexRepository.findByIndex(Mockito.any())).thenReturn(Optional.empty());
 
         // when & then
         assertThatThrownBy(() -> companyService.deactivateCompany(nonExistingDomain))
                 .isInstanceOf(NotExistCompanyException.class)
                 .hasMessageContaining("회사를 찾을 수 없습니다: 도메인 " + nonExistingDomain);
 
-        verify(companyRepository, times(1)).findById(nonExistingDomain);
+        verify(companyIndexRepository, times(1)).findByIndex(Mockito.any());
     }
 
     @Test
@@ -378,16 +396,30 @@ class CompanyServiceTest {
         companyA.deactivate(); // companyA는 이제 active=false 상태
         assertThat(companyA.isActive()).isFalse(); // 초기 상태 확인
 
-        Company spiedCompanyA = spy(companyA);
-        when(companyRepository.findById(existingDomain)).thenReturn(Optional.of(spiedCompanyA));
+        String hashKey = HashUtil.sha256Hex(existingDomain);
+        CompanyIndex companyIndex = new CompanyIndex(
+                hashKey,
+                "domain",
+                AESUtil.encrypt(companyA.getCompanyDomain())
+        );
+        Company company = spy(Company.ofNewCompany(
+                AESUtil.encrypt(companyA.getCompanyDomain()),
+                AESUtil.encrypt(companyA.getCompanyName()),
+                AESUtil.encrypt(companyA.getCompanyEmail()),
+                AESUtil.encrypt(companyA.getCompanyMobile()),
+                AESUtil.encrypt(companyA.getCompanyAddress())
+        ));
+        when(companyIndexRepository.findByIndex(hashKey)).thenReturn(Optional.of(companyIndex));
+        when(companyRepository.findById(companyIndex.getFieldValue())).thenReturn(Optional.of(company));
+
 
         // when
         companyService.activateCompany(existingDomain);
 
         // then
-        verify(spiedCompanyA, times(1)).activate(); // Company의 activate 메서드 호출 검증
-        assertThat(spiedCompanyA.isActive()).isTrue(); // 상태가 true로 변경되었는지 확인
-        verify(companyRepository, times(1)).findById(existingDomain);
+        verify(company, times(1)).activate(); // Company의 activate 메서드 호출 검증
+        assertThat(company.isActive()).isTrue(); // 상태가 true로 변경되었는지 확인
+        verify(companyRepository, times(1)).findById(companyIndex.getFieldValue());
         verify(companyRepository, never()).save(any(Company.class));
     }
 
@@ -396,22 +428,42 @@ class CompanyServiceTest {
     void activateCompany_Fail_DomainNotFound() {
         // given
         String nonExistingDomain = "nonexisting.com";
-        when(companyRepository.findById(nonExistingDomain)).thenReturn(Optional.empty());
+        String hashKey = HashUtil.sha256Hex(nonExistingDomain);
+        when(companyIndexRepository.findByIndex(hashKey)).thenReturn(Optional.empty());
 
         // when & then
         assertThatThrownBy(() -> companyService.activateCompany(nonExistingDomain))
                 .isInstanceOf(NotExistCompanyException.class)
                 .hasMessageContaining("회사를 찾을 수 없습니다: 도메인 " + nonExistingDomain);
 
-        verify(companyRepository, times(1)).findById(nonExistingDomain);
+        verify(companyIndexRepository, times(1)).findByIndex(hashKey);
     }
 
     @Test
     @DisplayName("모든 회사 조회 성공 - 회사 목록 반환")
     void getAllCompanies_Success_ReturnListOfCompanies() {
         // given
-        Company companyB = Company.ofNewCompany("google.com", "Google Inc.", "contact@google.com", "111-222-3333", "Mountain View");
-        when(companyRepository.findAll()).thenReturn(List.of(companyA, companyB));
+        String bDomain = "google.com";
+        String bName = "Google Inc.";
+        String bEmail = "contact@google.com";
+        String bMobile = "111-222-3333";
+        String bAddress = "Mountain View";
+        Company companyB = Company.ofNewCompany(
+                AESUtil.encrypt(bDomain),
+                AESUtil.encrypt(bName),
+                AESUtil.encrypt(bEmail),
+                AESUtil.encrypt(bMobile),
+                AESUtil.encrypt(bAddress)
+        );
+
+        Company companyC = Company.ofNewCompany(
+                AESUtil.encrypt(companyA.getCompanyDomain()),
+                AESUtil.encrypt(companyA.getCompanyName()),
+                AESUtil.encrypt(companyA.getCompanyEmail()),
+                AESUtil.encrypt(companyA.getCompanyMobile()),
+                AESUtil.encrypt(companyA.getCompanyAddress())
+        );
+        when(companyRepository.findAll()).thenReturn(List.of(companyC, companyB));
 
         // when
         List<CompanyResponse> companyResponses = companyService.getAllCompanies();
@@ -420,7 +472,7 @@ class CompanyServiceTest {
         assertThat(companyResponses).isNotNull();
         assertThat(companyResponses).hasSize(2);
         assertThat(companyResponses).extracting(CompanyResponse::getCompanyDomain)
-                .containsExactlyInAnyOrder(companyA.getCompanyDomain(), companyB.getCompanyDomain());
+                .containsExactlyInAnyOrder(AESUtil.decrypt(companyC.getCompanyDomain()), AESUtil.decrypt(companyB.getCompanyDomain()));
         // 필요시 다른 필드들도 검증
 
         verify(companyRepository, times(1)).findAll();

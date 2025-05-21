@@ -130,7 +130,7 @@ public class CompanyServiceImpl implements CompanyService {
         String hashDomain = HashUtil.sha256Hex(companyDomain);
 
         if(!companyIndexRepository.existsByIndex(hashDomain)) {
-            throw new NotExistCompanyException("회사를 찾을 수 없습니다: 도메인 " + companyDomain);
+            throw new NotExistCompanyException(companyDomain);
         }
         Company company = findCompanyByIdOrThrow(companyDomain);
         log.debug("회사 정보 조회 성공: {}", company.getCompanyDomain());
@@ -239,12 +239,12 @@ public class CompanyServiceImpl implements CompanyService {
 
         String hashKey = HashUtil.sha256Hex(companyDomain);
         CompanyIndex companyIndex = companyIndexRepository.findByIndex(hashKey).orElseThrow(
-                () -> new NotExistCompanyException("회사를 찾을 수 없습니다: 도메인 " + companyDomain));
+                () -> new NotExistCompanyException(companyDomain));
 
         return companyRepository.findById(companyIndex.getFieldValue())
                 .orElseThrow(() -> {
                     log.warn("내부 조회 실패: 존재하지 않는 회사 도메인 {}", companyDomain);
-                    return new NotExistCompanyException("회사를 찾을 수 없습니다: 도메인 " + companyDomain);
+                    return new NotExistCompanyException(companyDomain);
                 });
     }
 

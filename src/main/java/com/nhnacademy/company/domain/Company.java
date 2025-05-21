@@ -1,6 +1,5 @@
 package com.nhnacademy.company.domain;
 
-import com.nhnacademy.common.util.AESUtil;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;

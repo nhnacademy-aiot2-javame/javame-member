@@ -2,17 +2,19 @@ package com.nhnacademy.common.util;
 
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Component;
 
 /**
  * PasswordEncode 유틸.
  */
-@Component
 public class PasswordUtil {
     /**
      * Security.crypto.bcrypt를 사용한 BcryptPasswordEncoder.
      */
     private static final PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+
+    private PasswordUtil() {
+        throw new IllegalStateException("Utility class");
+    }
 
     /**
      * 들어오는 순수 String 비밀번호 값을 BcryptPasswordEncoder로 인코딩하는 메소드입니다.

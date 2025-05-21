@@ -1,13 +1,15 @@
 package com.nhnacademy.common.util;
 
 import org.apache.commons.codec.digest.DigestUtils;
-import org.springframework.stereotype.Component;
 
 /**
  * sha256Hex 알고리즘을 사용하기 위한 유틸입니다.
  */
-@Component
 public class HashUtil {
+
+    private HashUtil() {
+        throw new IllegalStateException("Utility class");
+    }
 
     /**
      * @param input 해쉬값으로 반환할 string 값.
