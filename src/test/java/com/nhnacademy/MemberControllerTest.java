@@ -82,7 +82,7 @@ class MemberControllerTest {
 
         // when & then
         mockMvc.perform(post("/members")
-                        .header("X-USER-ROLE", "ROLE_ADMIN")
+                        .header("X-User-Role", "ROLE_ADMIN")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated())
@@ -110,8 +110,8 @@ class MemberControllerTest {
         when(memberService.registerOwner(any())).thenReturn(response);
 
         // when & then
-        mockMvc.perform(post("/members/owner")
-                        .header("X-USER-ROLE", "ROLE_ADMIN")
+        mockMvc.perform(post("/members/owners")
+                        .header("X-User-Role", "ROLE_ADMIN")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated())
@@ -131,8 +131,8 @@ class MemberControllerTest {
         doNothing().when(memberService).updateLoginAt(email);
 
         // when & then
-        mockMvc.perform(put("/members/{email}/last-login", email)
-                        .header("X-USER-ROLE", "ROLE_ADMIN"))
+        mockMvc.perform(put("/members/internal/last-login?" +"email=" +email)
+                        .header("X-User-Role", "ROLE_ADMIN"))
                 .andExpect(status().isOk());
 
         verify(memberService).updateLoginAt(email);
@@ -150,7 +150,7 @@ class MemberControllerTest {
 
         // when & then
         mockMvc.perform(get("/members/{memberNo}", memberNo)
-                        .header("X-USER-ROLE", "ROLE_ADMIN"))
+                        .header("X-User-Role", "ROLE_ADMIN"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.memberNo").value(memberNo))
                 .andExpect(jsonPath("$.memberEmail").value("user@test.com"));
@@ -167,9 +167,9 @@ class MemberControllerTest {
         when(memberService.getMemberByEmail(email)).thenReturn(response);
 
         // when & then
-        mockMvc.perform(get("/members/member-email/{email}", email)
-                        .header("X-USER-ROLE", "ROLE_ADMIN")
-                        .header("X-USER-EMAIL", "user@test.com"))
+        mockMvc.perform(get("/members/me")
+                        .header("X-User-Role", "ROLE_ADMIN")
+                        .header("X-User-Email", "user@test.com"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.memberEmail").value(email));
     }
@@ -189,8 +189,8 @@ class MemberControllerTest {
         Mockito.when(memberService.getMemberByEmail(Mockito.anyString())).thenReturn(memberResponse);
         // when & then
         mockMvc.perform(put("/members/{memberNo}/password", memberNo)
-                        .header("X-USER-ROLE", "ROLE_ADMIN")
-                        .header("X-USER-EMAIL", "notfound@test.com")
+                        .header("X-User-Role", "ROLE_ADMIN")
+                        .header("X-User-Email", "notfound@test.com")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isNoContent());
@@ -206,8 +206,8 @@ class MemberControllerTest {
 
         // when & then
         mockMvc.perform(delete("/members/{memberNo}", memberNo)
-                        .header("X-USER-EMAIL", "notfound@test.com")
-                        .header("X-USER-ROLE", "ROLE_ADMIN"))
+                        .header("X-User-Email", "notfound@test.com")
+                        .header("X-User-Role", "ROLE_ADMIN"))
                 .andExpect(status().isNoContent());
     }
 
@@ -222,9 +222,9 @@ class MemberControllerTest {
         when(memberService.getLoginInfoByEmail(email)).thenReturn(response);
 
         // when & then
-        mockMvc.perform(get("/members/login-info/{email}", email)
-                        .header("X-USER-ROLE", "ROLE_ADMIN")
-                        .header("X-USER-EMAIL", "user@test.com"))
+        mockMvc.perform(get("/members/me/login-info")
+                        .header("X-User-Role", "ROLE_ADMIN")
+                        .header("X-User-Email", "user@test.com"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.memberEmail").value(email))
                 .andExpect(jsonPath("$.roleId").value("ROLE_USER"));
@@ -240,9 +240,9 @@ class MemberControllerTest {
                 .thenThrow(new NotExistMemberException("회원을 찾을 수 없습니다."));
 
         // when & then
-        mockMvc.perform(get("/members/member-email/{email}", nonExistingEmail)
-                        .header("X-USER-ROLE", "ROLE_ADMIN")
-                        .header("X-USER-EMAIL", "notfound@test.com"))
+        mockMvc.perform(get("/members/me")
+                        .header("X-User-Role", "ROLE_ADMIN")
+                        .header("X-User-Email", "notfound@test.com"))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.message").value("회원을 찾을 수 없습니다."));
     }
@@ -262,8 +262,8 @@ class MemberControllerTest {
 
         // when & then
         mockMvc.perform(put("/members/{memberNo}/password", memberNo)
-                        .header("X-USER-ROLE", "ROLE_ADMIN")
-                        .header("X-USER-EMAIL", "notfound@test.com")
+                        .header("X-User-Role", "ROLE_ADMIN")
+                        .header("X-User-Email", "notfound@test.com")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest())
@@ -280,9 +280,9 @@ class MemberControllerTest {
                 .thenThrow(new NotExistMemberException("회원을 찾을 수 없습니다."));
 
         // when & then
-        mockMvc.perform(get("/members/login-info/{email}", nonExistingEmail)
-                        .header("X-USER-ROLE", "ROLE_ADMIN")
-                        .header("X-USER-EMAIL", "notfound@test.com"))
+        mockMvc.perform(get("/members/me/login-info")
+                        .header("X-User-Role", "ROLE_ADMIN")
+                        .header("X-User-Email", "notfound@test.com"))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.message").value("회원을 찾을 수 없습니다."));
     }

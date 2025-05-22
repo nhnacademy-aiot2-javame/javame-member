@@ -110,7 +110,7 @@ class RoleControllerTest {
         mockMvc.perform(post("/roles")
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
-                        .header("X-USER-ROLE","")
+                        .header("X-User-Role","")
                         .content(objectMapper.writeValueAsString(invalidRequest)))
                 .andDo(print()) // 응답 로깅 (디버깅 시 유용)
                 .andExpect(status().is5xxServerError()) // @Validated에 의해 MethodArgumentNotValidException 발생
@@ -127,7 +127,7 @@ class RoleControllerTest {
 
         mockMvc.perform(get("/roles/{roleId}", roleId)
                         .accept(MediaType.APPLICATION_JSON)
-                        .header("X-USER-ROLE","ROLE_ADMIN"))
+                        .header("X-User-Role","ROLE_ADMIN"))
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.roleId").value(expectedResponse.getRoleId()))
@@ -146,7 +146,7 @@ class RoleControllerTest {
 
         mockMvc.perform(get("/roles/{roleId}", nonExistingRoleId)
                         .accept(MediaType.APPLICATION_JSON)
-                        .header("X-USER-ROLE","ROLE_ADMIN"))
+                        .header("X-User-Role","ROLE_ADMIN"))
                 .andExpect(status().isNotFound()) // GlobalExceptionHandler에 의해 404로 매핑됨
                 .andExpect(jsonPath("$.message").value(errorMessage));
 
@@ -164,7 +164,7 @@ class RoleControllerTest {
 
         mockMvc.perform(get("/roles")
                         .accept(MediaType.APPLICATION_JSON)
-                        .header("X-USER-ROLE","ROLE_ADMIN"))
+                        .header("X-User-Role","ROLE_ADMIN"))
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$", hasSize(ROLE_IDS.size())))
@@ -180,7 +180,7 @@ class RoleControllerTest {
 
         mockMvc.perform(get("/roles")
                         .accept(MediaType.APPLICATION_JSON)
-                        .header("X-USER-ROLE","ROLE_ADMIN"))
+                        .header("X-User-Role","ROLE_ADMIN"))
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$", hasSize(0)));
@@ -229,7 +229,7 @@ class RoleControllerTest {
         doNothing().when(roleService).deleteRole(targetRoleId);
 
         mockMvc.perform(delete("/roles/{roleId}", targetRoleId)
-                        .header("X-USER-ROLE","ROLE_ADMIN"))
+                        .header("X-User-Role","ROLE_ADMIN"))
                 .andExpect(status().isNoContent());
 
         verify(roleService, times(1)).deleteRole(targetRoleId);
@@ -243,7 +243,7 @@ class RoleControllerTest {
         doThrow(new ResourceNotFoundException(errorMessage)).when(roleService).deleteRole(nonExistingRoleId);
 
         mockMvc.perform(delete("/roles/{roleId}", nonExistingRoleId)
-                        .header("X-USER-ROLE","ROLE_ADMIN"))
+                        .header("X-User-Role","ROLE_ADMIN"))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.message").value(errorMessage));
 
@@ -255,7 +255,7 @@ class RoleControllerTest {
         return mockMvc.perform(post(urlTemplate)
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
-                .header("X-USER-ROLE","ROLE_ADMIN")
+                .header("X-User-Role","ROLE_ADMIN")
                 .content(objectMapper.writeValueAsString(content)));
     }
 
@@ -263,7 +263,7 @@ class RoleControllerTest {
         return mockMvc.perform(put(urlTemplate, pathVar)
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
-                .header("X-USER-ROLE","ROLE_ADMIN")
+                .header("X-User-Role","ROLE_ADMIN")
                 .content(objectMapper.writeValueAsString(content)));
     }
 }

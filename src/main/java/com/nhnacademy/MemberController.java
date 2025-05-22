@@ -19,7 +19,7 @@ import org.springframework.web.server.ResponseStatusException;
 /**
  * 회원(Member) 관련 HTTP 요청을 처리하는 REST 컨트롤러입니다.
  * 회원 가입, 조회, 수정, 탈퇴, 로그인 정보 제공 등의 API 엔드포인트를 제공합니다.
- * 모든 경로는 "/api/v1/members"를 기본으로 합니다.
+ * 모든 경로는 "/members"를 기본으로 합니다.
  */
 @RestController
 @RequestMapping(value = "/members", produces = MediaType.APPLICATION_JSON_VALUE)// 기본 경로 및 JSON 형태 응답 타입 설정
@@ -42,7 +42,7 @@ public class MemberController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    @PostMapping("/owner")
+    @PostMapping("/owners")
     public ResponseEntity<MemberResponse> registerOwner(@Validated @RequestBody MemberRegisterRequest request) {
         MemberResponse response = memberService.registerOwner(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
@@ -50,11 +50,12 @@ public class MemberController {
 
     /**
      * 회원이 로그인하고 가장 최근에 로그인한 시간을 나타내는 lastLoginAt을 업데이트합니다.
+     * 내부 서비스 전용으로 사용됩니다.
      * @param email 업데이트할 대상의 이메일 정보.
      * @return HTTP 상태 코드 200 (OK)를 반환합니다.
      */
-    @PutMapping("/{email}/last-login")
-    public ResponseEntity<Void> updateLastLogin(@PathVariable String email){
+    @PutMapping("/internal/last-login")
+    public ResponseEntity<Void> updateLastLogin(@RequestParam String email){
         memberService.updateLoginAt(email);
         return ResponseEntity.status(HttpStatus.OK).build();
     }
@@ -77,18 +78,16 @@ public class MemberController {
      * 주어진 회원 email 에 해당하는 회원 정보를 조회합니다.
      * 성공 시 HTTP 상태 코드 200 (OK)과 회원 정보를 반환합니다.
      *
-     * @param email 조회할 회원의 Email
+     * @param userEmail 토큰에서 얻은 유저의 이메일 정보입니다.
      * @return 조회된 회원 정보 ({@link MemberResponse})와 상태 코드 200
      */
-    @GetMapping("/member-email/{email}")
+    @GetMapping("/me")
     @HasRole({"ROLE_ADMIN", "ROLE_OWNER", "ROLE_USER"})
-    public ResponseEntity<MemberResponse> getMemberByEmail(@PathVariable String email,
-                                                           @RequestHeader("X-USER-EMAIL")String userEmail) {
-        if(!email.equals(userEmail)) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "해당 정보를 조회할 권한이 없습니다.");
+    public ResponseEntity<MemberResponse> getMemberByEmail(@RequestHeader("X-User-Email")String userEmail) {
+        if(userEmail == null || userEmail.isBlank()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "잘못된 요청입니다. ");
         }
-
-        MemberResponse response = memberService.getMemberByEmail(email);
+        MemberResponse response = memberService.getMemberByEmail(userEmail);
         return ResponseEntity.ok(response);
     }
 
@@ -107,7 +106,7 @@ public class MemberController {
     public ResponseEntity<Void> changeMemberPassword(
             @PathVariable Long memberNo,
             @Validated @RequestBody MemberPasswordChangeRequest request,
-            @RequestHeader("X-USER-EMAIL")String userEmail) {
+            @RequestHeader("X-User-Email")String userEmail) {
 
         MemberResponse memberResponse = memberService.getMemberByEmail(userEmail);
         if(!memberResponse.getMemberNo().equals(memberNo)) {
@@ -128,7 +127,7 @@ public class MemberController {
     @HasRole({"ROLE_ADMIN", "ROLE_OWNER"})
     public ResponseEntity<Void> deleteMember(
             @PathVariable Long memberNo,
-            @RequestHeader("X-USER-EMAIL")String userEmail) {
+            @RequestHeader("X-User-Email")String userEmail) {
 
         MemberResponse memberResponse = memberService.getMemberByEmail(userEmail);
         if(!memberResponse.getMemberNo().equals(memberNo)) {
@@ -143,19 +142,18 @@ public class MemberController {
      * 이 API는 주로 다른 내부 서비스(예: 인증 서버)에서 호출됩니다.
      * 성공 시 HTTP 상태 코드 200 (OK)와 로그인 정보를 반환합니다.
      *
-     * @param email 조회할 회원의 이메일 주소 (경로 변수)
+     * @param userEmail 조회할 회원의 이메일 주소 (경로 변수)
      * @return 로그인 관련 정보 ({@link MemberLoginResponse})와 상태 코드 200
      */
-    @GetMapping("/login-info/{email}")
+    @GetMapping("/me/login-info")
     @HasRole({"ROLE_ADMIN", "ROLE_OWNER", "ROLE_USER"})
     public ResponseEntity<MemberLoginResponse> getLoginInfoByEmail(
-            @PathVariable String email,
-            @RequestHeader("X-USER-EMAIL")String userEmail) {
+            @RequestHeader("X-User-Email")String userEmail) {
 
-        if(!email.equals(userEmail)) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "해당 정보에 대한 접근 권한이 없습니다. ");
+        if(userEmail == null || userEmail.isBlank()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "해당 정보에 대한 접근이 불가합니다. ");
         }
-        MemberLoginResponse response = memberService.getLoginInfoByEmail(email);
+        MemberLoginResponse response = memberService.getLoginInfoByEmail(userEmail);
         return ResponseEntity.ok(response);
     }
 }

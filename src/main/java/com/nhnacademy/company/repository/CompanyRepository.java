@@ -26,7 +26,7 @@ public interface CompanyRepository extends JpaRepository<Company, String> {
      * @param companyName 회사명
      * @return 회사 엔티티
      */
-    List<Company> findByCompanyName(String companyName);
+    Optional<Company> findByCompanyName(String companyName);
 
     /**
      * 주어진 회사 이름이 존재하는지 확인합니다.

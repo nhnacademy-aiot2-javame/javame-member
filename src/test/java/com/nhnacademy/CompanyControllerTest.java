@@ -78,7 +78,7 @@ class CompanyControllerTest {
     // --- 공통 요청 생성 헬퍼 메서드 ---
     private ResultActions performPostRequest(String url, Object content) throws Exception {
         return mockMvc.perform(post(url)
-                .header("X-USER-ROLE", "ROLE_ADMIN")
+                .header("X-User-Role", "ROLE_ADMIN")
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(content)));
@@ -86,7 +86,7 @@ class CompanyControllerTest {
 
     private ResultActions performPutRequest(String url, Object content) throws Exception {
         return mockMvc.perform(put(url)
-                .header("X-USER-ROLE", "ROLE_ADMIN")
+                .header("X-User-Role", "ROLE_ADMIN")
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(content)));
@@ -94,13 +94,13 @@ class CompanyControllerTest {
 
     private ResultActions performPatchRequest(String url) throws Exception {
         return mockMvc.perform(patch(url)
-                .header("X-USER-ROLE", "ROLE_ADMIN")
+                .header("X-User-Role", "ROLE_ADMIN")
                 .accept(MediaType.APPLICATION_JSON));
     }
 
     private ResultActions performGetRequest(String url) throws Exception {
         return mockMvc.perform(get(url)
-                .header("X-USER-ROLE", "ROLE_ADMIN")
+                .header("X-User-Role", "ROLE_ADMIN")
                 .accept(MediaType.APPLICATION_JSON));
     }
 
