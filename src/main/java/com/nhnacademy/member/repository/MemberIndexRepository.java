@@ -5,24 +5,24 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;
 
-public interface MemberIndexRepository extends JpaRepository<MemberIndex, String> {
+public interface MemberIndexRepository extends JpaRepository<MemberIndex, Long> {
 
     /**
-     * @param index 해쉬값
+     * @param hashValue 해쉬값
      * @return boolean
      */
-    boolean existsByIndex(String index);
+    boolean existsByHashValue(String hashValue);
 
     /**
-     * @param index 해쉬값
+     * @param hashValue 해쉬값
      * @param fieldName 필드명
      * @return boolean
      */
-    boolean existsByIndexAndFieldName(String index, String fieldName);
+    boolean existsByHashValueAndFieldName(String hashValue, String fieldName);
 
     /**
-     * @param index 해쉬값
+     * @param hashValue 해쉬값
      * @return MemberIndex Optional 값
      */
-    Optional<MemberIndex> findByIndex(String index);
+    Optional<MemberIndex> findByHashValue(String hashValue);
 }

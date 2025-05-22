@@ -35,6 +35,7 @@ import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -105,9 +106,9 @@ class MemberServiceTest {
 
         CompanyIndex companyIndex = new CompanyIndex(hashedCompanyDomain, "domain", company.getCompanyDomain());
 
-        when(memberIndexRepository.existsByIndexAndFieldName(hashedEmail, "email")).thenReturn(false);
-        when(companyIndexRepository.findByIndex(hashedCompanyDomain)).thenReturn(Optional.of(companyIndex));
-        when(companyRepository.findById(companyIndex.getFieldValue()))
+        when(memberIndexRepository.existsByHashValueAndFieldName(hashedEmail, "email")).thenReturn(false);
+        when(companyIndexRepository.findByHashValue(hashedCompanyDomain)).thenReturn(Optional.of(companyIndex));
+        when(companyRepository.findById(companyIndex.getCompanyDomain()))
                 .thenReturn(Optional.of(company));
 
         when(roleRepository.findById(defaultRoleId))
@@ -129,9 +130,9 @@ class MemberServiceTest {
         Assertions.assertTrue(PasswordUtil.matches(memberRegisterRequest.getMemberPassword(), captured.getMemberPassword()));
 
         // 불필요한 호출 제거됨
-        verify(memberIndexRepository, times(1)).existsByIndexAndFieldName(hashedEmail, "email");
-        verify(companyIndexRepository, times(1)).findByIndex(hashedCompanyDomain);
-        verify(companyRepository, times(1)).findById(company.getCompanyDomain());
+        verify(memberIndexRepository, times(1)).existsByHashValueAndFieldName(hashedEmail, "email");
+        verify(companyIndexRepository, times(1)).findByHashValue(hashedCompanyDomain);
+        verify(companyRepository, times(1)).findById(companyIndex.getCompanyDomain());
         verify(roleRepository, times(1)).findById(defaultRoleId);
         verify(memberRepository, times(1)).save(any(Member.class));
 
@@ -140,7 +141,7 @@ class MemberServiceTest {
     @Test
     @DisplayName("회원 등록 실패 - 이미 존재하는 이메일")
     void registerMember_Failure_AlreadyExists() {
-        when(memberIndexRepository.existsByIndexAndFieldName(Mockito.any(), Mockito.anyString())).thenReturn(true);
+        when(memberIndexRepository.existsByHashValueAndFieldName(Mockito.any(), Mockito.anyString())).thenReturn(true);
 
         assertThatThrownBy(() ->
                 memberService.registerMember(memberRegisterRequest))
@@ -155,8 +156,8 @@ class MemberServiceTest {
     @Test
     @DisplayName("회원 등록 실패 - 인덱스 테이블에서 찾지 못함. ")
     void registerMember_Failure_CompanyNotFound_1() {
-        when(memberIndexRepository.existsByIndexAndFieldName(Mockito.any(), Mockito.anyString())).thenReturn(false);
-        when(companyIndexRepository.findByIndex(Mockito.anyString())).thenReturn(Optional.empty());
+        when(memberIndexRepository.existsByHashValueAndFieldName(Mockito.any(), Mockito.anyString())).thenReturn(false);
+        when(companyIndexRepository.findByHashValue(Mockito.anyString())).thenReturn(Optional.empty());
 
         assertThatThrownBy(() ->
                 memberService.registerMember(memberRegisterRequest))
@@ -171,9 +172,9 @@ class MemberServiceTest {
     @DisplayName("회원 등록 실패 - 회사 도메인을 DB에서 찾을 수 없음. ")
     void registerMember_Failure_CompanyNotFound_2() {
         CompanyIndex companyIndex =  new CompanyIndex(HashUtil.sha256Hex(company.getCompanyDomain()), "domain", AESUtil.encrypt(company.getCompanyDomain()));
-        when(memberIndexRepository.existsByIndexAndFieldName(Mockito.any(), Mockito.anyString())).thenReturn(false);
-        when(companyIndexRepository.findByIndex(Mockito.anyString())).thenReturn(Optional.of(companyIndex));
-        when(companyRepository.findById(companyIndex.getFieldValue())).thenReturn(Optional.empty());
+        when(memberIndexRepository.existsByHashValueAndFieldName(Mockito.any(), Mockito.anyString())).thenReturn(false);
+        when(companyIndexRepository.findByHashValue(Mockito.anyString())).thenReturn(Optional.of(companyIndex));
+        when(companyRepository.findById(companyIndex.getCompanyDomain())).thenReturn(Optional.empty());
 
         assertThatThrownBy(() ->
                 memberService.registerMember(memberRegisterRequest))
@@ -189,9 +190,9 @@ class MemberServiceTest {
     @DisplayName("회원 등록 실패 - 기본 역할 없음")
     void registerMember_Failure_RoleNotFound() {
         CompanyIndex companyIndex =  new CompanyIndex(HashUtil.sha256Hex(company.getCompanyDomain()), "domain", AESUtil.encrypt(company.getCompanyDomain()));
-        when(memberIndexRepository.existsByIndexAndFieldName(Mockito.any(), Mockito.anyString())).thenReturn(false);
-        when(companyIndexRepository.findByIndex(Mockito.anyString())).thenReturn(Optional.of(companyIndex));
-        when(companyRepository.findById(companyIndex.getFieldValue())).thenReturn(Optional.ofNullable(company));
+        when(memberIndexRepository.existsByHashValueAndFieldName(Mockito.any(), Mockito.anyString())).thenReturn(false);
+        when(companyIndexRepository.findByHashValue(Mockito.anyString())).thenReturn(Optional.of(companyIndex));
+        when(companyRepository.findById(companyIndex.getCompanyDomain())).thenReturn(Optional.ofNullable(company));
         when(roleRepository.findById(Mockito.anyString())).thenReturn(Optional.empty());
         assertThatThrownBy(() ->
                 memberService.registerMember(memberRegisterRequest))
@@ -213,9 +214,9 @@ class MemberServiceTest {
 
         CompanyIndex companyIndex = new CompanyIndex(hashedCompanyDomain, "domain", company.getCompanyDomain());
 
-        when(memberIndexRepository.existsByIndexAndFieldName(hashedEmail, "email")).thenReturn(false);
-        when(companyIndexRepository.findByIndex(hashedCompanyDomain)).thenReturn(Optional.of(companyIndex));
-        when(companyRepository.findById(companyIndex.getFieldValue()))
+        when(memberIndexRepository.existsByHashValueAndFieldName(hashedEmail, "email")).thenReturn(false);
+        when(companyIndexRepository.findByHashValue(hashedCompanyDomain)).thenReturn(Optional.of(companyIndex));
+        when(companyRepository.findById(companyIndex.getCompanyDomain()))
                 .thenReturn(Optional.of(company));
 
         when(roleRepository.findById(ownerRoleId))
@@ -298,11 +299,11 @@ class MemberServiceTest {
         Member foundMember = Member.ofNewMember(company, roleUser, existingEmail, "password");
         ReflectionTestUtils.setField(foundMember, "memberNo", 1L); // ID 설정 (MemberResponse 변환 시 필요)
 
-        MemberIndex memberIndex = new MemberIndex(HashUtil.sha256Hex(existingEmail), "email", AESUtil.encrypt(existingEmail));
-        when(memberIndexRepository.findByIndex(HashUtil.sha256Hex(existingEmail))).thenReturn(Optional.of(memberIndex));
+        MemberIndex memberIndex = new MemberIndex(foundMember.getMemberNo(), "email", HashUtil.sha256Hex(existingEmail));
+        when(memberIndexRepository.findByHashValue(HashUtil.sha256Hex(existingEmail))).thenReturn(Optional.of(memberIndex));
 
         // memberRepository.findByMemberEmail 이 호출되면 Optional<Member> 반환하도록 설정
-        when(memberRepository.findByMemberEmail(memberIndex.getFieldValue())).thenReturn(Optional.of(foundMember));
+        when(memberRepository.findById(memberIndex.getMemberNo())).thenReturn(Optional.of(foundMember));
 
         // when - 서비스 메서드 호출
         MemberResponse response = memberService.getMemberByEmail(existingEmail);
@@ -335,7 +336,7 @@ class MemberServiceTest {
         ReflectionTestUtils.setField(foundMember, "memberNo", 1L); // ID 설정 (MemberResponse 변환 시 필요)
 
         // memberRepository.findByMemberEmail 이 호출되면 Optional.empty() 반환하도록 설정
-        when(memberIndexRepository.findByIndex(Mockito.any())).thenReturn(Optional.empty());
+        when(memberIndexRepository.findByHashValue(Mockito.any())).thenReturn(Optional.empty());
 
         // when & then - 예외 발생 검증
         assertThatThrownBy(() -> memberService.getMemberByEmail(nonExistingEmail))
@@ -351,13 +352,13 @@ class MemberServiceTest {
         String nonExistingEmail = "notfound@test.com";
         Member foundMember = Member.ofNewMember(company, roleUser, nonExistingEmail, "password");
         ReflectionTestUtils.setField(foundMember, "memberNo", 1L); // ID 설정 (MemberResponse 변환 시 필요)
-        MemberIndex memberIndex = new MemberIndex(HashUtil.sha256Hex(nonExistingEmail),
+        MemberIndex memberIndex = new MemberIndex(foundMember.getMemberNo(),
                 "email",
-                AESUtil.encrypt(nonExistingEmail));
+                HashUtil.sha256Hex(nonExistingEmail));
 
-        // memberRepository.findByMemberEmail 이 호출되면 Optional.empty() 반환하도록 설정
-        when(memberIndexRepository.findByIndex(Mockito.any())).thenReturn(Optional.of(memberIndex));
-        when(memberRepository.findByMemberEmail(memberIndex.getFieldValue())).thenReturn(Optional.empty());
+        // memberRepository.findById 이 호출되면 Optional.empty() 반환하도록 설정
+        when(memberIndexRepository.findByHashValue(Mockito.any())).thenReturn(Optional.of(memberIndex));
+        when(memberRepository.findById(memberIndex.getMemberNo())).thenReturn(Optional.empty());
         // when & then - 예외 발생 검증
         assertThatThrownBy(() -> memberService.getMemberByEmail(nonExistingEmail))
                 .isInstanceOf(NotExistMemberException.class)
@@ -502,11 +503,11 @@ class MemberServiceTest {
         String password = PasswordUtil.encode("password123!");
         Member activeMember = Member.ofNewMember(company, roleUser, existingEmail, password);
         ReflectionTestUtils.setField(activeMember, "memberNo", 1L);
-        MemberIndex index = new MemberIndex(HashUtil.sha256Hex(existingEmail),"email", existingEmail);
+        MemberIndex index = new MemberIndex(1L,"email", HashUtil.sha256Hex(existingEmail));
 
-        when(memberIndexRepository.findByIndex(Mockito.any())).thenReturn(Optional.of(index));
-        // memberRepository.findByMemberEmail 가 호출되면 activeMember 반환하도록 설정
-        when(memberRepository.findByMemberEmail(index.getFieldValue())).thenReturn(Optional.of(activeMember));
+        when(memberIndexRepository.findByHashValue(Mockito.any())).thenReturn(Optional.of(index));
+        // memberRepository.findById 가 호출되면 activeMember 반환하도록 설정
+        when(memberRepository.findById(index.getMemberNo())).thenReturn(Optional.of(activeMember));
 
         // when - 서비스 메서드 호출
         MemberLoginResponse response = memberService.getLoginInfoByEmail(existingEmail);
@@ -520,14 +521,14 @@ class MemberServiceTest {
         assertThat(response.getRoleId()).isEqualTo(roleUser.getRoleId());
 
         // Mock 호출 검증
-        verify(memberRepository, times(1)).findByMemberEmail(existingEmail);
+        verify(memberRepository, times(1)).findById(index.getMemberNo());
     }
 
     @Test
     @DisplayName("로그인 정보 조회 실패 - 존재하지 않는 이메일")
     void getLoginInfoByEmail_Fail_EmailNotFound() {
         // memberRepository.findByMemberEmail 가 호출되면 Optional.empty() 반환하도록 설정
-        when(memberIndexRepository.findByIndex(Mockito.any())).thenReturn(Optional.empty());
+        when(memberIndexRepository.findByHashValue(Mockito.any())).thenReturn(Optional.empty());
         // when & then - 예외 발생 검증
         Assertions.assertThrows(NotExistMemberException.class, ()->{
             memberService.getLoginInfoByEmail("nonExistingEmail");
@@ -548,15 +549,12 @@ class MemberServiceTest {
                 PasswordUtil.encode("password"));
 
         ReflectionTestUtils.setField(inactiveMember, "memberNo", 2L);
+        ReflectionTestUtils.setField(inactiveMember, "withdrawalAt", LocalDateTime.now());
 
-        // spy로 감싸서 isActive()만 false로 변경
-        Member spiedInactiveMember = spy(inactiveMember);
-        doReturn(false).when(spiedInactiveMember).isActive();
+        MemberIndex index = new MemberIndex(2L, "email", HashUtil.sha256Hex(inactiveEmail));
 
-        MemberIndex index = new MemberIndex(HashUtil.sha256Hex(inactiveEmail), "email", encryptedEmail);
-
-        when(memberIndexRepository.findByIndex(Mockito.any())).thenReturn(Optional.of(index));
-        when(memberRepository.findByMemberEmail(encryptedEmail)).thenReturn(Optional.of(spiedInactiveMember)); // ✅ fix
+        when(memberIndexRepository.findByHashValue(Mockito.any())).thenReturn(Optional.of(index));
+        when(memberRepository.findById(index.getMemberNo())).thenReturn(Optional.of(inactiveMember));
 
         // when & then
         assertThatThrownBy(() -> memberService.getLoginInfoByEmail(inactiveEmail))
@@ -574,22 +572,22 @@ class MemberServiceTest {
         String existingEmail = "user@test.com";
         Member existingMember = Member.ofNewMember(company, roleUser, existingEmail, "password");
         ReflectionTestUtils.setField(existingMember, "memberNo", 1L);
-        MemberIndex memberIndex = new MemberIndex(HashUtil.sha256Hex(existingEmail),
+        MemberIndex memberIndex = new MemberIndex(existingMember.getMemberNo(),
                 "email",
-                AESUtil.encrypt(existingEmail));
+                HashUtil.sha256Hex(existingEmail));
         // Member 객체를 spy로 만들어 updateLastLoginTime() 호출을 감시
         Member spiedMember = spy(existingMember);
 
-        // memberRepository.findByMemberEmail 가 호출되면 spiedMember 반환하도록 설정
-        when(memberIndexRepository.findByIndex(Mockito.any())).thenReturn(Optional.of(memberIndex));
-        when(memberRepository.findByMemberEmail(memberIndex.getFieldValue())).thenReturn(Optional.of(spiedMember));
+        // memberRepository.findById 가 호출되면 spiedMember 반환하도록 설정
+        when(memberIndexRepository.findByHashValue(Mockito.any())).thenReturn(Optional.of(memberIndex));
+        when(memberRepository.findById(memberIndex.getMemberNo())).thenReturn(Optional.of(spiedMember));
 
         // when - 서비스 메서드 호출
         memberService.updateLoginAt(existingEmail);
 
         // then - 검증
         // 1. findByMemberEmail이 1번 호출되었는지 확인
-        verify(memberRepository, times(1)).findByMemberEmail(memberIndex.getFieldValue());
+        verify(memberRepository, times(1)).findById(memberIndex.getMemberNo());
         // 2. Member 객체(spiedMember)의 updateLastLoginTime() 메서드가 1번 호출되었는지 확인
         verify(spiedMember, times(1)).updateLastLoginTime();
         // 3. (선택) memberRepository.save()가 호출되지 않았는지 확인 (변경 감지 사용 시)
@@ -603,7 +601,7 @@ class MemberServiceTest {
         String nonExistingEmail = "notfound@test.com";
 
         // memberRepository.findByMemberEmail 가 호출되면 Optional.empty() 반환하도록 설정
-        when(memberIndexRepository.findByIndex(Mockito.any())).thenReturn(Optional.empty());
+        when(memberIndexRepository.findByHashValue(Mockito.any())).thenReturn(Optional.empty());
 
         // when & then - 예외 발생 검증
         assertThatThrownBy(() -> memberService.updateLoginAt(nonExistingEmail))
@@ -611,6 +609,6 @@ class MemberServiceTest {
                 .hasMessageContaining(String.format("%s 에 해당하는 멤버는 존재하지 않습니다.", nonExistingEmail));
 
         // Mock 호출 검증
-        verify(memberIndexRepository, times(1)).findByIndex(Mockito.any());
+        verify(memberIndexRepository, times(1)).findByHashValue(Mockito.any());
     }
 }

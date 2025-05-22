@@ -2,6 +2,8 @@ package com.nhnacademy.company.domain;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import lombok.Getter;
@@ -14,40 +16,22 @@ import lombok.ToString;
 @NoArgsConstructor
 @ToString
 public class CompanyIndex {
-
-    /**
-     * 인덱스 값
-     * sha256(String domain)
-     */
     @Id
-    @Column(name = "index", length = 64)
-    private String index;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
-    /**
-     * 필드명
-     * ex) "회사 도메인"
-     */
-    @Column(name = "field_name", length = 10)
+    @Column(name = "company_domain", length = 50, nullable = false)
+    private String companyDomain; // FK로 company 테이블과 연결할 예정
+
+    @Column(name = "field_name", length = 30, nullable = false)
     private String fieldName;
 
+    @Column(name = "hash_value", length = 64, nullable = false)
+    private String hashValue;
 
-    /**
-     * 인코딩 된 값
-     * AESUtil.encode(String domain)
-     */
-    @Column(name = "field_value", length = 64)
-    private String fieldValue;
-
-
-    /**
-     *
-     * @param index 인덱스 값
-     * @param fieldName 필드명
-     * @param fieldValue 필드값
-     */
-    public CompanyIndex(String index, String fieldName, String fieldValue) {
-        this.index = index;
+    public CompanyIndex(String companyDomain, String fieldName, String hashValue) {
+        this.companyDomain = companyDomain;
         this.fieldName = fieldName;
-        this.fieldValue = fieldValue;
+        this.hashValue = hashValue;
     }
 }

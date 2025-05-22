@@ -72,7 +72,7 @@ public class CompanyServiceImpl implements CompanyService {
         log.debug("신규 회사 및 Owner 등록 요청 시작: 도메인 {}", request.getCompanyDomain());
 
         // 회사 도메인 중복 체크
-        if (companyIndexRepository.existsByIndexAndFieldName(HashUtil.sha256Hex(request.getCompanyDomain()), "domain")) {
+        if (companyIndexRepository.existsByHashValueAndFieldName(HashUtil.sha256Hex(request.getCompanyDomain()), "domain")) {
             log.warn("회사 등록 실패: 이미 존재하는 도메인 {}", request.getCompanyDomain());
             throw new AlreadyExistCompanyException("이미 사용 중인 회사 도메인입니다.");
         }
@@ -92,11 +92,11 @@ public class CompanyServiceImpl implements CompanyService {
 
         //인덱스 테이블에 추가
         List<CompanyIndex> indices = List.of(
-                new CompanyIndex(domainHash, "domain", encryptedDomain),
-                new CompanyIndex(nameHash, "name", encryptedName),
-                new CompanyIndex(emailHash, "email", encryptedEmail),
-                new CompanyIndex(mobileHash, "mobile", encryptedMobile),
-                new CompanyIndex(addressHash, "address", encryptedAddress)
+                new CompanyIndex(encryptedDomain, "domain", domainHash),
+                new CompanyIndex(encryptedDomain, "name", nameHash),
+                new CompanyIndex(encryptedDomain, "email", emailHash),
+                new CompanyIndex(encryptedDomain, "mobile", mobileHash),
+                new CompanyIndex(encryptedDomain, "address", addressHash)
         );
         companyIndexRepository.saveAll(indices);
         log.debug("인덱스 테이블에 저장 완료");
@@ -129,7 +129,7 @@ public class CompanyServiceImpl implements CompanyService {
 
         String hashDomain = HashUtil.sha256Hex(companyDomain);
 
-        if(!companyIndexRepository.existsByIndex(hashDomain)) {
+        if(!companyIndexRepository.existsByHashValue(hashDomain)) {
             throw new NotExistCompanyException(companyDomain);
         }
         Company company = findCompanyByIdOrThrow(companyDomain);
@@ -238,10 +238,10 @@ public class CompanyServiceImpl implements CompanyService {
         }
 
         String hashKey = HashUtil.sha256Hex(companyDomain);
-        CompanyIndex companyIndex = companyIndexRepository.findByIndex(hashKey).orElseThrow(
+        CompanyIndex companyIndex = companyIndexRepository.findByHashValue(hashKey).orElseThrow(
                 () -> new NotExistCompanyException(companyDomain));
 
-        return companyRepository.findById(companyIndex.getFieldValue())
+        return companyRepository.findById(companyIndex.getCompanyDomain())
                 .orElseThrow(() -> {
                     log.warn("내부 조회 실패: 존재하지 않는 회사 도메인 {}", companyDomain);
                     return new NotExistCompanyException(companyDomain);

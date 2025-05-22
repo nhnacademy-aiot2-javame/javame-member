@@ -80,7 +80,7 @@ public class MemberServiceImpl implements MemberService {
 
         // 이메일 중복 확인
         String hashKey = HashUtil.sha256Hex(request.getMemberEmail());
-        if (memberIndexRepository.existsByIndexAndFieldName(hashKey, "email")) {
+        if (memberIndexRepository.existsByHashValueAndFieldName(hashKey, "email")) {
             log.warn("회원 등록 실패: 이미 존재하는 이메일 {}", request.getMemberEmail());
             throw new AlreadyExistMemberException("이미 존재하는 이메일 입니다 : " + request.getMemberEmail());
         }
@@ -88,11 +88,11 @@ public class MemberServiceImpl implements MemberService {
         // 소속 회사 조회 (반드시 존재해야 함)
         String index = HashUtil.sha256Hex(request.getCompanyDomain());
         //인덱스 레포지토리로 존재하는지 검색
-        CompanyIndex companyIndex = companyIndexRepository.findByIndex(index).orElseThrow(
+        CompanyIndex companyIndex = companyIndexRepository.findByHashValue(index).orElseThrow(
                 () -> new NotExistCompanyException("존재하지 않는 회사 도메인입니다. " + request.getCompanyDomain()));
 
         //인덱스 레포지토리에서 찾은 companyIndex를 통해 해당하는 필드값을 가져와 회사 레포지토리에서 검색
-        Company company = companyRepository.findById(companyIndex.getFieldValue())
+        Company company = companyRepository.findById(companyIndex.getCompanyDomain())
                 .orElseThrow(() -> {
                     log.warn("회원 등록 실패: 존재하지 않는 회사 도메인 {}", request.getCompanyDomain());
                     return new NotExistCompanyException("가입하려는 회사 도메인('"
@@ -125,18 +125,18 @@ public class MemberServiceImpl implements MemberService {
         log.debug("소유주 등록 요청 처리 시작: 이메일 {}", request.getMemberEmail());
 
         String hashKey = HashUtil.sha256Hex(request.getMemberEmail());
-        if (memberIndexRepository.existsByIndexAndFieldName(hashKey, "email")) {
+        if (memberIndexRepository.existsByHashValueAndFieldName(hashKey, "email")) {
             log.warn("소유주 등록 실패: 이미 존재하는 이메일 {}", request.getMemberEmail());
             throw new AlreadyExistMemberException("이미 존재하는 이메일 입니다 : " + request.getMemberEmail());
         }
 
         String index = HashUtil.sha256Hex(request.getCompanyDomain());
         //인덱스 레포지토리로 존재하는지 검색
-        CompanyIndex companyIndex = companyIndexRepository.findByIndex(index).orElseThrow(
+        CompanyIndex companyIndex = companyIndexRepository.findByHashValue(index).orElseThrow(
                 () -> new NotExistCompanyException("존재하지 않는 회사 도메인입니다. " + request.getCompanyDomain()));
 
         // 소속 회사 조회 (반드시 존재해야 함)
-        Company company = companyRepository.findById(companyIndex.getFieldValue())
+        Company company = companyRepository.findById(companyIndex.getCompanyDomain())
                 .orElseThrow(() -> {
                     log.warn("소유주 등록 실패: 존재하지 않는 회사 도메인 {}", request.getCompanyDomain());
                     return new NotExistCompanyException("가입하려는 회사 도메인('"
@@ -306,10 +306,10 @@ public class MemberServiceImpl implements MemberService {
         if (filed == null || filed.isBlank()) {
             throw new IllegalArgumentException("filed 값이 empty.");
         }
-        MemberIndex memberIndex = memberIndexRepository.findByIndex(HashUtil.sha256Hex(filed)).orElseThrow(
+        MemberIndex memberIndex = memberIndexRepository.findByHashValue(HashUtil.sha256Hex(filed)).orElseThrow(
                 ()-> new NotExistMemberException(String.format("%s 에 해당하는 멤버는 존재하지 않습니다.", filed)));
 
-        return memberRepository.findByMemberEmail(memberIndex.getFieldValue())
+        return memberRepository.findById(memberIndex.getMemberNo())
                 .orElseThrow(() -> new NotExistMemberException(
                         String.format("%s로 저장된 회원이 없습니다.", filed)));
     }
