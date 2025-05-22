@@ -37,7 +37,7 @@ public class CompanyController {
      * @param request 회사 정보 및 Owner 회원 정보 DTO ({@link CompanyRegisterRequest})
      * @return 생성된 회사 정보 ({@link CompanyResponse})와 상태 코드 201
      */
-    @PostMapping("/register")
+    @PostMapping
     public ResponseEntity<CompanyResponse> registerCompany(
             @Validated @RequestBody CompanyRegisterRequest request) {
         CompanyResponse response = companyService.registerCompany(request);
