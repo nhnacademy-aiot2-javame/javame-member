@@ -1,5 +1,6 @@
 package com.nhnacademy;
 
+import com.nhnacademy.common.annotation.HasRole;
 import com.nhnacademy.role.dto.request.RoleRegisterRequest;
 import com.nhnacademy.role.dto.request.RoleUpdateRequest;
 import com.nhnacademy.role.dto.response.RoleResponse;
@@ -35,6 +36,7 @@ public class RoleController {
      * @return 생성된 역할 정보 ({@link RoleResponse})와 상태 코드 201
      */
     @PostMapping
+    @HasRole({"ROLE_ADMIN"})
     public ResponseEntity<RoleResponse> registerRole(
             @Validated @RequestBody RoleRegisterRequest request) {
         RoleResponse response = roleService.registerRole(request);
@@ -49,6 +51,7 @@ public class RoleController {
      * @return 조회된 역할 정보 ({@link RoleResponse})와 상태 코드 200
      */
     @GetMapping("/{roleId}")
+    @HasRole({"ROLE_ADMIN"})
     public ResponseEntity<RoleResponse> getRoleById(
             @PathVariable String roleId) {
         RoleResponse response = roleService.getRoleById(roleId);
@@ -62,6 +65,7 @@ public class RoleController {
      * @return 모든 역할 정보 리스트 ({@link RoleResponse})와 상태 코드 200
      */
     @GetMapping
+    @HasRole({"ROLE_ADMIN"})
     public ResponseEntity<List<RoleResponse>> getAllRoles() {
         List<RoleResponse> response = roleService.getAllRoles();
         return ResponseEntity.ok(response);
@@ -76,9 +80,11 @@ public class RoleController {
      * @return 수정된 역할 정보 ({@link RoleResponse})와 상태 코드 200
      */
     @PutMapping("/{roleId}")
+    @HasRole({"ROLE_ADMIN"})
     public ResponseEntity<RoleResponse> updateRole(
             @PathVariable String roleId,
             @Validated @RequestBody RoleUpdateRequest request) {
+
         RoleResponse response = roleService.updateRole(roleId, request);
         return ResponseEntity.ok(response);
     }
@@ -92,6 +98,7 @@ public class RoleController {
      * @return 상태 코드 204 (No Content)
      */
     @DeleteMapping("/{roleId}")
+    @HasRole({"ROLE_ADMIN"})
     public ResponseEntity<Void> deleteRole(
             @PathVariable String roleId) {
         roleService.deleteRole(roleId);
