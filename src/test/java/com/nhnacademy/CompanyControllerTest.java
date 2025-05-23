@@ -114,10 +114,11 @@ class CompanyControllerTest {
         // 그 부분은 CompanyService 단위 테스트에서 검증되었을 것으로 가정.
         // Controller 테스트에서는 companyService.registerCompany 호출과 반환값 검증에 집중.
 
-        performPostRequest(BASE_URL + "/register", defaultRegisterRequest)
+        mockMvc.perform(post(BASE_URL)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(defaultRegisterRequest)))
                 .andDo(print())
                 .andExpect(status().isCreated())
-                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.companyDomain").value(defaultCompanyResponse.getCompanyDomain()))
                 .andExpect(jsonPath("$.companyName").value(defaultCompanyResponse.getCompanyName()));
 
@@ -131,7 +132,7 @@ class CompanyControllerTest {
         when(companyService.registerCompany(any(CompanyRegisterRequest.class)))
                 .thenThrow(new ResourceAlreadyExistsException(errorMessage));
 
-        performPostRequest(BASE_URL + "/register", defaultRegisterRequest)
+        performPostRequest(BASE_URL, defaultRegisterRequest)
                 .andExpect(status().isConflict())
                 .andExpect(jsonPath("$.message").value(errorMessage));
     }

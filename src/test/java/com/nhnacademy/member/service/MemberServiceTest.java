@@ -241,7 +241,7 @@ class MemberServiceTest {
         assertThat(captureMember.getRole()).isSameAs(roleOwner);
 
 
-        verify(companyRepository, times(1)).findById(memberRegisterRequest.getCompanyDomain());
+        verify(companyRepository, times(1)).findById(companyIndex.getCompanyDomain());
         verify(roleRepository, times(1)).findById(ownerRoleId);
         verify(memberRepository, times(1)).save(any(Member.class));
     }
@@ -316,7 +316,7 @@ class MemberServiceTest {
         assertThat(response.getRoleId()).isEqualTo(roleUser.getRoleId());
 
         // Mock 호출 검증
-        verify(memberRepository, times(1)).findByMemberEmail(Mockito.anyString());
+        verify(memberRepository, times(1)).findById(memberIndex.getMemberNo());
     }
 
     @Test
