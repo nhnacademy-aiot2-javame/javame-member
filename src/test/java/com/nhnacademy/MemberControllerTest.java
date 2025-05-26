@@ -81,7 +81,7 @@ class MemberControllerTest {
         when(memberService.registerMember(any())).thenReturn(response);
 
         // when & then
-        mockMvc.perform(post("/members")
+        mockMvc.perform(post("/members/register")
                         .header("X-User-Role", "ROLE_ADMIN")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
@@ -110,7 +110,7 @@ class MemberControllerTest {
         when(memberService.registerOwner(any())).thenReturn(response);
 
         // when & then
-        mockMvc.perform(post("/members/owners")
+        mockMvc.perform(post("/members/register/owners")
                         .header("X-User-Role", "ROLE_ADMIN")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))

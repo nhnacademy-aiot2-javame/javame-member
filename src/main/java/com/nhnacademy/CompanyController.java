@@ -28,7 +28,6 @@ import java.util.List;
 public class CompanyController {
 
     private final CompanyService companyService;
-    private final MemberService memberService;
 
     /**
      * 신규 회사를 등록하고 동시에 첫 번째 관리자(Owner) 회원을 생성합니다.
@@ -37,7 +36,7 @@ public class CompanyController {
      * @param request 회사 정보 및 Owner 회원 정보 DTO ({@link CompanyRegisterRequest})
      * @return 생성된 회사 정보 ({@link CompanyResponse})와 상태 코드 201
      */
-    @PostMapping
+    @PostMapping("/register")
     public ResponseEntity<CompanyResponse> registerCompany(
             @Validated @RequestBody CompanyRegisterRequest request) {
         CompanyResponse response = companyService.registerCompany(request);

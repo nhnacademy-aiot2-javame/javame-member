@@ -36,13 +36,13 @@ public class MemberController {
      * @param request 회원 가입 정보 DTO ({@link MemberRegisterRequest})
      * @return 생성된 회원 정보 ({@link MemberResponse})와 상태 코드 201
      */
-    @PostMapping
+    @PostMapping("/register")
     public ResponseEntity<MemberResponse> registerMember(@Validated @RequestBody MemberRegisterRequest request) {
         MemberResponse response = memberService.registerMember(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    @PostMapping("/owners")
+    @PostMapping("register/owners")
     public ResponseEntity<MemberResponse> registerOwner(@Validated @RequestBody MemberRegisterRequest request) {
         MemberResponse response = memberService.registerOwner(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
@@ -146,7 +146,6 @@ public class MemberController {
      * @return 로그인 관련 정보 ({@link MemberLoginResponse})와 상태 코드 200
      */
     @GetMapping("/me/login-info")
-    @HasRole({"ROLE_ADMIN", "ROLE_OWNER", "ROLE_USER"})
     public ResponseEntity<MemberLoginResponse> getLoginInfoByEmail(
             @RequestHeader("X-User-Email")String userEmail) {
 

@@ -114,7 +114,7 @@ class CompanyControllerTest {
         // 그 부분은 CompanyService 단위 테스트에서 검증되었을 것으로 가정.
         // Controller 테스트에서는 companyService.registerCompany 호출과 반환값 검증에 집중.
 
-        mockMvc.perform(post(BASE_URL)
+        mockMvc.perform(post(BASE_URL+"/register")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(defaultRegisterRequest)))
                 .andDo(print())

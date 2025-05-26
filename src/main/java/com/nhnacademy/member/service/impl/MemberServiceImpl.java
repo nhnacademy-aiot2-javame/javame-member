@@ -30,12 +30,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Objects;
 
-/**
- * MemberService 인터페이스의 구현 클래스입니다.
- * 회원 관련 주요 비즈니스 로직을 담당하며, 데이터베이스 트랜잭션을 관리합니다.
- */
 /**
  * {@link MemberService} 인터페이스의 구현 클래스입니다.
  * 회원 가입, 조회, 수정, 탈퇴, 로그인 정보 제공 등 회원 관련 핵심 비즈니스 로직을 수행합니다.
@@ -114,6 +109,7 @@ public class MemberServiceImpl implements MemberService {
         // Member 엔티티 생성 및 저장
         Member newMember = Member.ofNewMember(company, userRole, AESUtil.encrypt(request.getMemberEmail()), PasswordUtil.encode(request.getMemberPassword()));
         Member savedMember = memberRepository.save(newMember);
+        memberIndexRepository.save(new MemberIndex(savedMember.getMemberNo(), "email", hashKey));
         log.debug("회원 등록 성공: 이메일 '{}', ID '{}'", savedMember.getMemberEmail(), savedMember.getMemberNo());
 
         // 응답 DTO 변환 후 반환
@@ -158,6 +154,7 @@ public class MemberServiceImpl implements MemberService {
         // Member 엔티티 생성 및 저장
         Member newMember = Member.ofNewMember(company, userRole, AESUtil.encrypt(request.getMemberEmail()), PasswordUtil.encode(request.getMemberPassword()));
         Member savedMember = memberRepository.save(newMember);
+        memberIndexRepository.save(new MemberIndex(savedMember.getMemberNo(), "email", hashKey));
         log.info("소유주 등록 성공: 이메일 '{}', ID '{}'", savedMember.getMemberEmail(), savedMember.getMemberNo());
 
         // 응답 DTO 변환 후 반환

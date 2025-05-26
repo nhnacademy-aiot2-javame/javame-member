@@ -2,16 +2,12 @@ package com.nhnacademy.member.repository;
 
 import com.nhnacademy.member.domain.MemberIndex;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
 
+@Repository
 public interface MemberIndexRepository extends JpaRepository<MemberIndex, Long> {
-
-    /**
-     * @param hashValue 해쉬값
-     * @return boolean
-     */
-    boolean existsByHashValue(String hashValue);
 
     /**
      * @param hashValue 해쉬값

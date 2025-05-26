@@ -4,6 +4,7 @@ import com.nhnacademy.common.exception.DecryptionException;
 import com.nhnacademy.common.exception.EncryptionException;
 import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
@@ -14,6 +15,7 @@ import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.util.Base64;
 
+@Component
 public class AESUtil {
     /**
      * 오타 방지용.
