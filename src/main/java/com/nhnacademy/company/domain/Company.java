@@ -21,7 +21,7 @@ public class Company {
      * 예: "javame.com"
      */
     @Id
-    @Column(name = "company_domain", length = 50)
+    @Column(name = "company_domain", length = 200)
     @Comment("회사 도메인 (PK)")
     private String companyDomain;
 
@@ -42,7 +42,7 @@ public class Company {
     /**
      * 회사 대표 연락처.
      */
-    @Column(name = "company_mobile", length = 20, nullable = false)
+    @Column(name = "company_mobile", length = 200, nullable = false)
     @Comment("회사 연락처")
     private String companyMobile;
 
