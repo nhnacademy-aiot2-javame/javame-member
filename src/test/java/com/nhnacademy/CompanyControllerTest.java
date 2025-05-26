@@ -132,7 +132,7 @@ class CompanyControllerTest {
         when(companyService.registerCompany(any(CompanyRegisterRequest.class)))
                 .thenThrow(new ResourceAlreadyExistsException(errorMessage));
 
-        performPostRequest(BASE_URL, defaultRegisterRequest)
+        performPostRequest(BASE_URL + "/register", defaultRegisterRequest)
                 .andExpect(status().isConflict())
                 .andExpect(jsonPath("$.message").value(errorMessage));
     }
