@@ -15,3 +15,7 @@ GET http://localhost:10279/api/v1/members/companies/testLocal.com?isPending=fals
 
 ###
 GET http://localhost:10279/api/v1/members/companies/testLocal.com?isPending=true&page=1
+
+
+###
+GET http://localhost:10276/members/companies/testLocal.com?isPending=true&page=1

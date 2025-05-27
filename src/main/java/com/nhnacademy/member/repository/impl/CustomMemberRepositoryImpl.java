@@ -73,7 +73,7 @@ public class CustomMemberRepositoryImpl implements CustomMemberRepository {
         Long listSize = jpaQueryFactory.select(qMember.count())
                 .from(qMember)
                 .join(qMember.company, qCompany)
-                .where(qMember.company.companyDomain.eq(companyIndex.getHashValue()))
+                .where(qMember.company.companyDomain.eq(companyIndex.getCompanyDomain()))
                 .fetchOne();
         if (Objects.isNull(listSize)){
             listSize = 0L;
