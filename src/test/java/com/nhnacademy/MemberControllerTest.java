@@ -19,6 +19,8 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.time.LocalDateTime;
+
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
@@ -57,7 +59,9 @@ class MemberControllerTest {
                 1L,
                 "newbie@test.com",
                 "test-company.com",
-                "ROLE_MEMBER"
+                "ROLE_MEMBER",
+                LocalDateTime.now(),
+                LocalDateTime.now()
         );
     }
 
@@ -75,7 +79,9 @@ class MemberControllerTest {
                 1L,
                 "newbie@test.com",
                 "test-comp.com",
-                "ROLE_USER"
+                "ROLE_USER",
+                LocalDateTime.now(),
+                LocalDateTime.now()
         );
 
         when(memberService.registerMember(any())).thenReturn(response);
@@ -103,7 +109,9 @@ class MemberControllerTest {
                 2L,
                 "owner@test.com",
                 "test-company.com",
-                "ROLE_OWNER"
+                "ROLE_OWNER",
+                LocalDateTime.now(),
+                LocalDateTime.now()
         );
 
         // 서비스 계층의 동작을 미리 정의
@@ -144,7 +152,7 @@ class MemberControllerTest {
         // given
         Long memberNo = 1L;
         MemberResponse response = new MemberResponse(
-                memberNo, "user@test.com", "test-company.com", "ROLE_USER"
+                memberNo, "user@test.com", "test-company.com", "ROLE_USER", LocalDateTime.now(), LocalDateTime.now()
         );
         when(memberService.getMemberById(memberNo)).thenReturn(response);
 
@@ -162,7 +170,7 @@ class MemberControllerTest {
         // given
         String email = "user@test.com";
         MemberResponse response = new MemberResponse(
-                1L, email, "test-company.com", "ROLE_USER"
+                1L, email, "test-company.com", "ROLE_USER", LocalDateTime.now(), LocalDateTime.now()
         );
         when(memberService.getMemberByEmail(email)).thenReturn(response);
 

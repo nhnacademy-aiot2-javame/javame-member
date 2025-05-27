@@ -8,6 +8,9 @@ import com.nhnacademy.member.dto.response.MemberLoginResponse;
 import com.nhnacademy.member.dto.response.MemberResponse;
 import com.nhnacademy.member.service.MemberService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -154,5 +157,18 @@ public class MemberController {
         }
         MemberLoginResponse response = memberService.getLoginInfoByEmail(userEmail);
         return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/companies/{company-domain}")
+    public ResponseEntity<Page<MemberResponse>> getMemberResponseFromCompanyDomain
+            (@PathVariable("company-domain") String companyDomain, @PageableDefault(size=10) Pageable pageable, @RequestParam("isPending")boolean isPending) {
+        Page<MemberResponse> memberResponsePage = memberService.getMemberResponseFromCompanyDomain(companyDomain, pageable, isPending);
+        return ResponseEntity.ok(memberResponsePage);
+    }
+
+    @PutMapping("/role/{member-no}")
+    public ResponseEntity<String> memberRoleUpdate(@PathVariable("member-no")Long memberNo, @RequestParam("role")String role){
+        String updateRole = memberService.updateMemberRole(memberNo, role);
+        return ResponseEntity.ok(updateRole);
     }
 }
