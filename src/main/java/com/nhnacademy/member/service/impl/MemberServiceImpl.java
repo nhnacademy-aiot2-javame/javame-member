@@ -26,6 +26,8 @@ import com.nhnacademy.role.repository.RoleRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -54,7 +56,7 @@ public class MemberServiceImpl implements MemberService {
     private final RoleRepository roleRepository;
 
     // application.yml 등 설정 파일에서 기본 사용자 역할 ID 주입
-    @Value("${app.security.default-role-id:ROLE_USER}")
+    @Value("${app.security.pending-role-id}")
     private String defaultUserRoleId;
 
     @Value("${app.security.owner-role-id:ROLE_OWNER}")
@@ -262,6 +264,26 @@ public class MemberServiceImpl implements MemberService {
         member.updateLastLoginTime();
     }
 
+    @Override
+    public Page<MemberResponse> getMemberResponseFromCompanyDomain(String companyDomain, Pageable pageable, boolean isPending) {
+        return memberRepository.findMembersFromCompanyDomain(companyDomain, pageable, isPending);
+    }
+
+    @Override
+    public String updateMemberRole(Long memberNo, String role) {
+        Role userRole = roleRepository.findById(role)
+                .orElseThrow(
+                        () -> new NotExistRoleException("해당 권한은 없습니다.")
+                );
+
+        Member member = memberRepository.findById(memberNo).orElseThrow(
+                () -> new NotExistMemberException("해당 회원은 존재하지 않습니다.")
+        );
+
+        member.updateRole(userRole);
+        return "권한 변경 완료";
+    }
+
     /**
      * 주어진 ID로 {@link Member}를 조회하고, 존재하지 않으면 {@code NotExistMemberException}을 발생시키는 내부 헬퍼 메서드입니다.
      * 서비스 내 여러 메서드에서 회원 조회 및 예외 처리 로직의 중복을 방지합니다.
@@ -295,7 +317,9 @@ public class MemberServiceImpl implements MemberService {
                 member.getMemberNo(),
                 member.getMemberEmail(),
                 companyDomain,
-                roleId
+                roleId,
+                member.getRegisteredAt(),
+                member.getLastLoginAt()
         );
     }
 
@@ -310,4 +334,5 @@ public class MemberServiceImpl implements MemberService {
                 .orElseThrow(() -> new NotExistMemberException(
                         String.format("%s로 저장된 회원이 없습니다.", filed)));
     }
+
 }

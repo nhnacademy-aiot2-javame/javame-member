@@ -1,8 +1,10 @@
 package com.nhnacademy.member.dto.response;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import com.fasterxml.jackson.core.JsonToken;
+import com.querydsl.core.annotations.QueryProjection;
+import lombok.*;
+
+import java.time.LocalDateTime;
 
 /**
  * 회원 정보 조회 응답 시 반환될 데이터를 담는 DTO 클래스입니다.
@@ -10,7 +12,7 @@ import lombok.NoArgsConstructor;
  */
 @Getter
 @NoArgsConstructor
-@AllArgsConstructor
+@Builder
 public class MemberResponse {
 
     /**
@@ -32,4 +34,18 @@ public class MemberResponse {
      * 역할 ID (예: "ROLE_USER").
      */
     private String roleId;
+
+    private LocalDateTime registerAt;
+
+    private LocalDateTime lastLoginAt;
+
+    @QueryProjection
+    public MemberResponse(Long memberNo, String memberEmail, String companyDomain, String roleId, LocalDateTime registerAt, LocalDateTime lastLoginAt) {
+        this.memberNo = memberNo;
+        this.memberEmail = memberEmail;
+        this.companyDomain = companyDomain;
+        this.roleId = roleId;
+        this.registerAt = registerAt;
+        this.lastLoginAt = lastLoginAt;
+    }
 }

@@ -34,14 +34,14 @@ public class Member {
      * 회원이 속한 회사 정보.
      */
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "company_domain", nullable = false)
+    @JoinColumn(name = "company_domain", referencedColumnName = "company_domain", nullable = false)
     private Company company;
 
     /**
      * 회원 역할 정보.
      */
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "role_id", nullable = false)
+    @JoinColumn(name = "role_id", referencedColumnName = "role_id", nullable = false)
     private Role role;
 
     /**
@@ -150,6 +150,10 @@ public class Member {
      */
     public void updateLastLoginTime() {
         this.lastLoginAt = LocalDateTime.now();
+    }
+
+    public void updateRole(Role role){
+        this.role = role;
     }
 
     /**
