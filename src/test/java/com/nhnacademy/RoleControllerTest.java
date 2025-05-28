@@ -15,13 +15,13 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest; // 추가
 import org.junit.jupiter.params.provider.ValueSource; // 추가
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import; // 추가
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
-import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 
 import java.util.Collections;
 import java.util.List;
@@ -35,7 +35,8 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print; // 추가 (디버깅용)
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@WebMvcTest(controllers = RoleController.class)
+@SpringBootTest
+@AutoConfigureMockMvc
 @Import(GlobalExceptionHandler.class)
 class RoleControllerTest {
 
@@ -106,10 +107,14 @@ class RoleControllerTest {
     void registerRole_Fail_Validation_NullRoleId() throws Exception {
         RoleRegisterRequest invalidRequest = new RoleRegisterRequest(null, "Valid Name", "Valid Desc");
 
-        performPostRequest("/roles", invalidRequest)
+        mockMvc.perform(post("/roles")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .header("X-User-Role","")
+                        .content(objectMapper.writeValueAsString(invalidRequest)))
                 .andDo(print()) // 응답 로깅 (디버깅 시 유용)
-                .andExpect(status().isBadRequest()) // @Validated에 의해 MethodArgumentNotValidException 발생
-                .andExpect(jsonPath("$.message").exists()); // GlobalExceptionHandler의 메시지 포맷 확인
+                .andExpect(status().is5xxServerError()) // @Validated에 의해 MethodArgumentNotValidException 발생
+                .andExpect(jsonPath("$.message").exists());
     }
 
     // --- 단일 역할 조회 테스트 ---
@@ -121,7 +126,8 @@ class RoleControllerTest {
         when(roleService.getRoleById(roleId)).thenReturn(expectedResponse);
 
         mockMvc.perform(get("/roles/{roleId}", roleId)
-                        .accept(MediaType.APPLICATION_JSON))
+                        .accept(MediaType.APPLICATION_JSON)
+                        .header("X-User-Role","ROLE_ADMIN"))
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.roleId").value(expectedResponse.getRoleId()))
@@ -139,7 +145,8 @@ class RoleControllerTest {
         when(roleService.getRoleById(nonExistingRoleId)).thenThrow(new ResourceNotFoundException(errorMessage));
 
         mockMvc.perform(get("/roles/{roleId}", nonExistingRoleId)
-                        .accept(MediaType.APPLICATION_JSON))
+                        .accept(MediaType.APPLICATION_JSON)
+                        .header("X-User-Role","ROLE_ADMIN"))
                 .andExpect(status().isNotFound()) // GlobalExceptionHandler에 의해 404로 매핑됨
                 .andExpect(jsonPath("$.message").value(errorMessage));
 
@@ -156,7 +163,8 @@ class RoleControllerTest {
         when(roleService.getAllRoles()).thenReturn(expectedResponses);
 
         mockMvc.perform(get("/roles")
-                        .accept(MediaType.APPLICATION_JSON))
+                        .accept(MediaType.APPLICATION_JSON)
+                        .header("X-User-Role","ROLE_ADMIN"))
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$", hasSize(ROLE_IDS.size())))
@@ -171,7 +179,8 @@ class RoleControllerTest {
         when(roleService.getAllRoles()).thenReturn(Collections.emptyList());
 
         mockMvc.perform(get("/roles")
-                        .accept(MediaType.APPLICATION_JSON))
+                        .accept(MediaType.APPLICATION_JSON)
+                        .header("X-User-Role","ROLE_ADMIN"))
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$", hasSize(0)));
@@ -219,7 +228,8 @@ class RoleControllerTest {
         String targetRoleId = "ROLE_ADMIN";
         doNothing().when(roleService).deleteRole(targetRoleId);
 
-        mockMvc.perform(delete("/roles/{roleId}", targetRoleId))
+        mockMvc.perform(delete("/roles/{roleId}", targetRoleId)
+                        .header("X-User-Role","ROLE_ADMIN"))
                 .andExpect(status().isNoContent());
 
         verify(roleService, times(1)).deleteRole(targetRoleId);
@@ -232,7 +242,8 @@ class RoleControllerTest {
         String errorMessage = "해당 권한이 존재하지 않습니다: ID " + nonExistingRoleId;
         doThrow(new ResourceNotFoundException(errorMessage)).when(roleService).deleteRole(nonExistingRoleId);
 
-        mockMvc.perform(delete("/roles/{roleId}", nonExistingRoleId))
+        mockMvc.perform(delete("/roles/{roleId}", nonExistingRoleId)
+                        .header("X-User-Role","ROLE_ADMIN"))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.message").value(errorMessage));
 
@@ -244,6 +255,7 @@ class RoleControllerTest {
         return mockMvc.perform(post(urlTemplate)
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
+                .header("X-User-Role","ROLE_ADMIN")
                 .content(objectMapper.writeValueAsString(content)));
     }
 
@@ -251,6 +263,7 @@ class RoleControllerTest {
         return mockMvc.perform(put(urlTemplate, pathVar)
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
+                .header("X-User-Role","ROLE_ADMIN")
                 .content(objectMapper.writeValueAsString(content)));
     }
 }

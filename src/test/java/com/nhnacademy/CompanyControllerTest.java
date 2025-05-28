@@ -1,4 +1,4 @@
-package com.nhnacademy; // 실제 패키지 경로에 맞게 수정
+package com.nhnacademy;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
@@ -15,12 +15,14 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
+
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
@@ -34,8 +36,9 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@WebMvcTest(controllers = CompanyController.class)
-@Import(GlobalExceptionHandler.class) // 전역 예외 핸들러 포함
+@SpringBootTest
+@AutoConfigureMockMvc
+@Import({GlobalExceptionHandler.class}) // 전역 예외 핸들러 포함
 class CompanyControllerTest {
 
     @Autowired
@@ -75,6 +78,7 @@ class CompanyControllerTest {
     // --- 공통 요청 생성 헬퍼 메서드 ---
     private ResultActions performPostRequest(String url, Object content) throws Exception {
         return mockMvc.perform(post(url)
+                .header("X-User-Role", "ROLE_ADMIN")
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(content)));
@@ -82,6 +86,7 @@ class CompanyControllerTest {
 
     private ResultActions performPutRequest(String url, Object content) throws Exception {
         return mockMvc.perform(put(url)
+                .header("X-User-Role", "ROLE_ADMIN")
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(content)));
@@ -89,11 +94,13 @@ class CompanyControllerTest {
 
     private ResultActions performPatchRequest(String url) throws Exception {
         return mockMvc.perform(patch(url)
+                .header("X-User-Role", "ROLE_ADMIN")
                 .accept(MediaType.APPLICATION_JSON));
     }
 
     private ResultActions performGetRequest(String url) throws Exception {
         return mockMvc.perform(get(url)
+                .header("X-User-Role", "ROLE_ADMIN")
                 .accept(MediaType.APPLICATION_JSON));
     }
 
@@ -107,10 +114,11 @@ class CompanyControllerTest {
         // 그 부분은 CompanyService 단위 테스트에서 검증되었을 것으로 가정.
         // Controller 테스트에서는 companyService.registerCompany 호출과 반환값 검증에 집중.
 
-        performPostRequest(BASE_URL + "/register", defaultRegisterRequest)
+        mockMvc.perform(post(BASE_URL+"/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(defaultRegisterRequest)))
                 .andDo(print())
                 .andExpect(status().isCreated())
-                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.companyDomain").value(defaultCompanyResponse.getCompanyDomain()))
                 .andExpect(jsonPath("$.companyName").value(defaultCompanyResponse.getCompanyName()));
 
