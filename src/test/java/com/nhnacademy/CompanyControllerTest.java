@@ -2,7 +2,7 @@ package com.nhnacademy; // 실제 패키지 경로에 맞게 수정
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import com.nhnacademy.common.exception.GlobalExceptionHandler; // GlobalExceptionHandler import
+import com.nhnacademy.common.exception.GlobalExceptionHandler;
 import com.nhnacademy.common.exception.ResourceAlreadyExistsException;
 import com.nhnacademy.common.exception.ResourceNotFoundException;
 import com.nhnacademy.company.dto.request.CompanyRegisterRequest;
@@ -10,7 +10,6 @@ import com.nhnacademy.company.dto.request.CompanyUpdateEmailRequest;
 import com.nhnacademy.company.dto.request.CompanyUpdateRequest;
 import com.nhnacademy.company.dto.response.CompanyResponse;
 import com.nhnacademy.company.service.CompanyService;
-// MemberService도 CompanyController에서 사용되므로 MockBean으로 추가해야 합니다.
 import com.nhnacademy.member.service.MemberService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -22,8 +21,6 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
-import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
-
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
