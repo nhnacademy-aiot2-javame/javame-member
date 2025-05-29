@@ -315,8 +315,8 @@ public class MemberServiceImpl implements MemberService {
 
         return new MemberResponse(
                 member.getMemberNo(),
-                member.getMemberEmail(),
-                companyDomain,
+                AESUtil.decrypt(member.getMemberEmail()),
+                AESUtil.decrypt(companyDomain),
                 roleId,
                 member.getRegisteredAt(),
                 member.getLastLoginAt()

@@ -71,7 +71,6 @@ public class MemberController {
      * @return 조회된 회원 정보 ({@link MemberResponse})와 상태 코드 200
      */
     @GetMapping("/{memberNo}")
-    @HasRole({"ROLE_ADMIN", "ROLE_OWNER", "ROLE_USER"})
     public ResponseEntity<MemberResponse> getMemberById(@PathVariable Long memberNo) {
         MemberResponse response = memberService.getMemberById(memberNo);
         return ResponseEntity.ok(response);
@@ -85,7 +84,6 @@ public class MemberController {
      * @return 조회된 회원 정보 ({@link MemberResponse})와 상태 코드 200
      */
     @GetMapping("/me")
-    @HasRole({"ROLE_ADMIN", "ROLE_OWNER", "ROLE_USER"})
     public ResponseEntity<MemberResponse> getMemberByEmail(@RequestHeader("X-User-Email")String userEmail) {
         if(userEmail == null || userEmail.isBlank()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "잘못된 요청입니다. ");
@@ -105,7 +103,6 @@ public class MemberController {
      * @return 상태 코드 204 (No Content)
      */
     @PutMapping("/{memberNo}/password")
-    @HasRole({"ROLE_ADMIN", "ROLE_OWNER", "ROLE_USER"})
     public ResponseEntity<Void> changeMemberPassword(
             @PathVariable Long memberNo,
             @Validated @RequestBody MemberPasswordChangeRequest request,
@@ -127,7 +124,6 @@ public class MemberController {
      * @return 상태 코드 204 (No Content)
      */
     @DeleteMapping("/{memberNo}")
-    @HasRole({"ROLE_ADMIN", "ROLE_OWNER"})
     public ResponseEntity<Void> deleteMember(
             @PathVariable Long memberNo,
             @RequestHeader("X-User-Email")String userEmail) {
