@@ -18,7 +18,6 @@ import java.util.List;
 /**
  * 역할(Role) 관련 HTTP 요청을 처리하는 REST 컨트롤러입니다.
  * 역할 조회, 생성, 수정, 삭제 등의 API 엔드포인트를 제공합니다.
- * TODO: 역할 생성/수정/삭제 API는 보안상 민감할 수 있으므로 접근 제어가 필요합니다.
  * 모든 경로는 "/api/v1/roles"를 기본으로 합니다.
  */
 @RestController
