@@ -14,7 +14,7 @@ import java.util.Optional;
  * Spring Data JPA의 JpaRepository를 상속받아 기본적인 CRUD 기능을 제공받습니다.
  */
 @Repository
-public interface MemberRepository extends JpaRepository<Member, Long> {
+public interface MemberRepository extends JpaRepository<Member, Long>, CustomMemberRepository {
 
     /**
      * 주어진 이메일 주소로 회원을 조회합니다.

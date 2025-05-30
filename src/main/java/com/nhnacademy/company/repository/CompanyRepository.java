@@ -2,8 +2,8 @@ package com.nhnacademy.company.repository;
 
 import com.nhnacademy.company.domain.Company;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
 
-import java.util.List;
 import java.util.Optional;
 
 /**
@@ -11,6 +11,7 @@ import java.util.Optional;
  * Spring Data JPA의 JpaRepository를 상속받아 기본적인 CRUD 기능을 제공받습니다.
  * 기본키는 회사 도메인(String)입니다.
  */
+@Repository
 public interface CompanyRepository extends JpaRepository<Company, String> {
 
     /**
@@ -26,7 +27,7 @@ public interface CompanyRepository extends JpaRepository<Company, String> {
      * @param companyName 회사명
      * @return 회사 엔티티
      */
-    List<Company> findByCompanyName(String companyName);
+    Optional<Company> findByCompanyName(String companyName);
 
     /**
      * 주어진 회사 이름이 존재하는지 확인합니다.

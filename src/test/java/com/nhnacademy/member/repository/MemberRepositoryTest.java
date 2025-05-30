@@ -1,5 +1,6 @@
 package com.nhnacademy.member.repository;
 
+import com.nhnacademy.common.config.QueryDslConfig;
 import com.nhnacademy.company.domain.Company;
 import com.nhnacademy.member.domain.Member;
 import com.nhnacademy.role.domain.Role;
@@ -10,6 +11,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
+import org.springframework.context.annotation.Import;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.test.context.ActiveProfiles;
 
@@ -22,6 +24,7 @@ import static org.assertj.core.api.Assertions.*;
 @Slf4j
 @ActiveProfiles("test")
 @DataJpaTest
+@Import({QueryDslConfig.class})
 /**
  * MemberRepositoryTest는 MemberRepository의 CRUD 기능을 테스트하는 클래스입니다.
  * @see MemberRepository

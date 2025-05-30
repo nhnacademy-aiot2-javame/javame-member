@@ -7,6 +7,8 @@ import com.nhnacademy.member.dto.response.MemberLoginResponse;
 import com.nhnacademy.member.dto.response.MemberResponse;
 import com.nhnacademy.common.exception.ResourceAlreadyExistsException;
 import com.nhnacademy.common.exception.ResourceNotFoundException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 /**
  * 회원 관련 비즈니스 로직을 처리하는 서비스 인터페이스입니다.
@@ -85,4 +87,24 @@ public interface MemberService {
      * @param memberEmail
      */
     void updateLoginAt(String memberEmail);
+
+    /**
+     * isPending - true : pending 권한의 회원을 가지고 옵니다.
+     * isPending - false : pending을 제외한 나머지 회원을 가지고 옵니다.
+     * 회사의 회원 정보를 Page로 가지고 옵니다.
+     * @param companyDomain 회사 도메인
+     * @param pageable pageable
+     * @param isPending true, false
+     * @return 회원 목록.
+     */
+    Page<MemberResponse> getMemberResponseFromCompanyDomain(String companyDomain, Pageable pageable, boolean isPending);
+
+    /**
+     * 회원의 권한을 변경 합니다.
+     * @param memberNo 회원 번호
+     * @param role 변경할 권한
+     * @return 성공 실패 여부
+     */
+    String updateMemberRole(Long memberNo, String role);
+
 }
