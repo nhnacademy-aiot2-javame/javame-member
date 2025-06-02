@@ -219,7 +219,7 @@ public class CompanyServiceImpl implements CompanyService {
     public List<CompanyResponse> getAllCompanies() {
         log.debug("모든 회사 목록 조회 요청");
         List<Company> companies = companyRepository.findAll();
-        log.debug("총 {}개의 회사 조회됨.", companies.size());
+        log.error("총 {}개의 회사 조회됨.", companies.size());
         return companies.stream()
                 .map(this::mapToCompanyResponse)
                 .toList();
