@@ -11,11 +11,15 @@ import com.nhnacademy.member.service.MemberService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+
+import java.time.LocalDateTime;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -23,7 +27,8 @@ import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@WebMvcTest(controllers = MemberController.class)
+@SpringBootTest
+@AutoConfigureMockMvc
 class MemberControllerTest {
 
     @Autowired
@@ -54,7 +59,9 @@ class MemberControllerTest {
                 1L,
                 "newbie@test.com",
                 "test-company.com",
-                "ROLE_MEMBER"
+                "ROLE_MEMBER",
+                LocalDateTime.now(),
+                LocalDateTime.now()
         );
     }
 
@@ -72,13 +79,16 @@ class MemberControllerTest {
                 1L,
                 "newbie@test.com",
                 "test-comp.com",
-                "ROLE_USER"
+                "ROLE_USER",
+                LocalDateTime.now(),
+                LocalDateTime.now()
         );
 
         when(memberService.registerMember(any())).thenReturn(response);
 
         // when & then
-        mockMvc.perform(post("/members")
+        mockMvc.perform(post("/members/register")
+                        .header("X-User-Role", "ROLE_ADMIN")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated())
@@ -99,14 +109,17 @@ class MemberControllerTest {
                 2L,
                 "owner@test.com",
                 "test-company.com",
-                "ROLE_OWNER"
+                "ROLE_OWNER",
+                LocalDateTime.now(),
+                LocalDateTime.now()
         );
 
         // 서비스 계층의 동작을 미리 정의
         when(memberService.registerOwner(any())).thenReturn(response);
 
         // when & then
-        mockMvc.perform(post("/members/owner")
+        mockMvc.perform(post("/members/register/owners")
+                        .header("X-User-Role", "ROLE_ADMIN")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated())
@@ -126,7 +139,8 @@ class MemberControllerTest {
         doNothing().when(memberService).updateLoginAt(email);
 
         // when & then
-        mockMvc.perform(put("/members/{email}/last-login", email))
+        mockMvc.perform(put("/members/internal/last-login?" +"email=" +email)
+                        .header("X-User-Role", "ROLE_ADMIN"))
                 .andExpect(status().isOk());
 
         verify(memberService).updateLoginAt(email);
@@ -138,12 +152,13 @@ class MemberControllerTest {
         // given
         Long memberNo = 1L;
         MemberResponse response = new MemberResponse(
-                memberNo, "user@test.com", "test-company.com", "ROLE_USER"
+                memberNo, "user@test.com", "test-company.com", "ROLE_USER", LocalDateTime.now(), LocalDateTime.now()
         );
         when(memberService.getMemberById(memberNo)).thenReturn(response);
 
         // when & then
-        mockMvc.perform(get("/members/{memberNo}", memberNo))
+        mockMvc.perform(get("/members/{memberNo}", memberNo)
+                        .header("X-User-Role", "ROLE_ADMIN"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.memberNo").value(memberNo))
                 .andExpect(jsonPath("$.memberEmail").value("user@test.com"));
@@ -155,12 +170,14 @@ class MemberControllerTest {
         // given
         String email = "user@test.com";
         MemberResponse response = new MemberResponse(
-                1L, email, "test-company.com", "ROLE_USER"
+                1L, email, "test-company.com", "ROLE_USER", LocalDateTime.now(), LocalDateTime.now()
         );
         when(memberService.getMemberByEmail(email)).thenReturn(response);
 
         // when & then
-        mockMvc.perform(get("/members/member-email/{email}", email))
+        mockMvc.perform(get("/members/me")
+                        .header("X-User-Role", "ROLE_ADMIN")
+                        .header("X-User-Email", "user@test.com"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.memberEmail").value(email));
     }
@@ -177,9 +194,11 @@ class MemberControllerTest {
 
         doNothing().when(memberService)
                 .changeMemberPassword(eq(memberNo), any());
-
+        Mockito.when(memberService.getMemberByEmail(Mockito.anyString())).thenReturn(memberResponse);
         // when & then
         mockMvc.perform(put("/members/{memberNo}/password", memberNo)
+                        .header("X-User-Role", "ROLE_ADMIN")
+                        .header("X-User-Email", "notfound@test.com")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isNoContent());
@@ -191,9 +210,12 @@ class MemberControllerTest {
         // given
         Long memberNo = 1L;
         doNothing().when(memberService).deleteMember(memberNo);
+        Mockito.when(memberService.getMemberByEmail(Mockito.anyString())).thenReturn(memberResponse);
 
         // when & then
-        mockMvc.perform(delete("/members/{memberNo}", memberNo))
+        mockMvc.perform(delete("/members/{memberNo}", memberNo)
+                        .header("X-User-Email", "notfound@test.com")
+                        .header("X-User-Role", "ROLE_ADMIN"))
                 .andExpect(status().isNoContent());
     }
 
@@ -208,7 +230,9 @@ class MemberControllerTest {
         when(memberService.getLoginInfoByEmail(email)).thenReturn(response);
 
         // when & then
-        mockMvc.perform(get("/members/login-info/{email}", email))
+        mockMvc.perform(get("/members/me/login-info")
+                        .header("X-User-Role", "ROLE_ADMIN")
+                        .header("X-User-Email", "user@test.com"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.memberEmail").value(email))
                 .andExpect(jsonPath("$.roleId").value("ROLE_USER"));
@@ -224,7 +248,9 @@ class MemberControllerTest {
                 .thenThrow(new NotExistMemberException("회원을 찾을 수 없습니다."));
 
         // when & then
-        mockMvc.perform(get("/members/member-email/{email}", nonExistingEmail))
+        mockMvc.perform(get("/members/me")
+                        .header("X-User-Role", "ROLE_ADMIN")
+                        .header("X-User-Email", "notfound@test.com"))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.message").value("회원을 찾을 수 없습니다."));
     }
@@ -240,9 +266,12 @@ class MemberControllerTest {
 
         doThrow(new IllegalArgumentException("현재 비밀번호가 일치하지 않습니다."))
                 .when(memberService).changeMemberPassword(eq(memberNo), any());
+        Mockito.when(memberService.getMemberByEmail(Mockito.anyString())).thenReturn(memberResponse);
 
         // when & then
         mockMvc.perform(put("/members/{memberNo}/password", memberNo)
+                        .header("X-User-Role", "ROLE_ADMIN")
+                        .header("X-User-Email", "notfound@test.com")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest())
@@ -259,7 +288,9 @@ class MemberControllerTest {
                 .thenThrow(new NotExistMemberException("회원을 찾을 수 없습니다."));
 
         // when & then
-        mockMvc.perform(get("/members/login-info/{email}", nonExistingEmail))
+        mockMvc.perform(get("/members/me/login-info")
+                        .header("X-User-Role", "ROLE_ADMIN")
+                        .header("X-User-Email", "notfound@test.com"))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.message").value("회원을 찾을 수 없습니다."));
     }

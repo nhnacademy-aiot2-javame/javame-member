@@ -80,6 +80,7 @@ public class GlobalExceptionHandler {
      */
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorResponse> handleValidationExceptions(MethodArgumentNotValidException ex) {
+        log.warn("### MethodArgumentNotValidException CAUGHT! ###"); // 디버깅 로그 추가
         String errorMessage = ex.getBindingResult().getFieldErrors().stream()
                 .map(error -> String.format("[%s] %s", error.getField(), error.getDefaultMessage()))
                 .collect(Collectors.joining("; "));
@@ -93,6 +94,8 @@ public class GlobalExceptionHandler {
         );
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
     }
+
+
 
     /**
      * 위에서 명시적으로 처리되지 않은 모든 종류의 {@link Exception}을 처리하는 최종 핸들러입니다.
@@ -115,6 +118,11 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
     }
 
+    /**
+     * {@link IllegalArgumentException} 예외가 발생했을 때 호출되는 핸들러 메서드입니다.
+     * @param ex 발생한 Exception 객체
+     * @return 400 상태 코드와 일반적인 에러 메시지를 담은 ResponseEntity
+     */
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<ErrorResponse> handleIllegalArgumentException(IllegalArgumentException ex) {
         ErrorResponse errorResponse = new ErrorResponse(
@@ -126,6 +134,14 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
     }
 
+    /**
+     * {@link HttpMessageNotReadableException} 예외가 발생했을 때 호출되는 핸들러 메서드입니다.
+     * 일반적으로 JSON 파싱 오류나 요청 본문의 구조가 잘못된 경우 발생합니다.
+     * 보통 HttpMessageNotReadableException은 클라이언트의 요청 본문(Request Body)이 Spring에서 기대하는 형식과 맞지 않을 때 발생합니다.
+     *
+     * @param ex 발생한 {@link HttpMessageNotReadableException} 예외 객체
+     * @return HTTP 400(BAD_REQUEST) 상태 코드와 함께 사용자에게 이해하기 쉬운 메시지를 담은 {@link ErrorResponse} 객체를 반환합니다.
+     */
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ResponseEntity<ErrorResponse> handleHttpMessageNotReadable(HttpMessageNotReadableException ex) {
         ErrorResponse errorResponse = new ErrorResponse(

@@ -1,6 +1,8 @@
 package com.nhnacademy.company.repository;
 
+import com.nhnacademy.common.config.QueryDslConfig;
 import com.nhnacademy.company.domain.Company;
+import com.nhnacademy.member.repository.impl.CustomMemberRepositoryImpl;
 import jakarta.persistence.PersistenceException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -8,6 +10,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
+import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
 
 import java.util.List;
@@ -15,10 +18,10 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.junit.jupiter.api.Assertions.*;
 
 @ActiveProfiles("test")
 @DataJpaTest
+@Import({QueryDslConfig.class})
 class CompanyRepositoryTest {
 
     @Autowired
@@ -182,29 +185,22 @@ class CompanyRepositoryTest {
     @DisplayName("회사 이름으로 회사 목록 조회")
     void findByCompanyName_ShouldReturnListOfCompanies() {
         // when: 이름으로 조회
-        List<Company> foundByNameA = companyRepository.findByCompanyName("NHN Academy");
-        List<Company> foundByNameC = companyRepository.findByCompanyName("Unique Corp");
-        List<Company> foundByNonExistentName = companyRepository.findByCompanyName("NonExistent Name");
+        Optional<Company> foundByNameC = companyRepository.findByCompanyName("Unique Corp");
+        Optional<Company> foundByNonExistentName = companyRepository.findByCompanyName("NonExistent Name");
 
-        // then: 결과 확인
-        // "NHN Academy" 이름으로는 2개 회사가 조회되어야 함
-        assertThat(foundByNameA).hasSize(2);
-        assertThat(foundByNameA).extracting(Company::getCompanyDomain)
-                .containsExactlyInAnyOrder(companyA.getCompanyDomain(), companyB_SameName.getCompanyDomain());
+        // "Unique Corp" 이름의 회사가 존재해야 함
+        assertThat(foundByNameC).isPresent();
+        assertThat(foundByNameC.get().getCompanyDomain()).isEqualTo(companyC_UniqueName.getCompanyDomain());
 
-        // "Unique Corp" 이름으로는 1개 회사가 조회되어야 함
-        assertThat(foundByNameC).hasSize(1);
-        assertThat(foundByNameC.get(0).getCompanyDomain()).isEqualTo(companyC_UniqueName.getCompanyDomain());
-
-        // 존재하지 않는 이름으로는 빈 리스트가 반환되어야 함
-        assertThat(foundByNonExistentName).isEmpty();
+        // 존재하지 않는 이름일 경우 Optional.empty 여야 함
+        assertThat(foundByNonExistentName).isNotPresent();
     }
 
     @Test
     @DisplayName("회사 이름 존재 여부 확인")
     void existsByCompanyName_ShouldReturnCorrectBoolean() {
         // when & then
-        assertThat(companyRepository.existsByCompanyName("NHN Academy")).isTrue(); // 중복된 이름도 존재하면 true
+        assertThat(companyRepository.existsByCompanyName("NHN Academy")).isTrue();
         assertThat(companyRepository.existsByCompanyName("Unique Corp")).isTrue();
         assertThat(companyRepository.existsByCompanyName("NonExistent Name")).isFalse();
     }

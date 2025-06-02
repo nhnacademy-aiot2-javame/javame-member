@@ -1,17 +1,36 @@
-POST http://localhost:8000/api/v1/members
+POST http://localhost:10276/members/register
 Content-Type: application/json
 
 {
-  "memberBirth": "2025-05-01",
   "memberEmail": "nane@naver.com",
-  "memberId": "javame",
-  "memberMobile": "010-1234-5678",
-  "memberName": "홍길동",
   "memberPassword": "password",
-  "memberSex": "M"
+  "companyDomain": "javame.com"
 }
 
 ###
 GET http://localhost:10256/api/v1/members/jjyeonplt
 
 ###
+GET http://localhost:10279/api/v1/members/companies/testLocal.com?isPending=false&page=1
+
+###
+GET http://localhost:10279/api/v1/members/companies/testLocal.com?isPending=true&page=1
+
+
+###
+GET http://localhost:10276/members/companies/testLocal.com?isPending=true&page=1
+
+###
+GET http://localhost:10279/api/v1/members/companies/testLocal.com?isPending=true&page=1
+Authorization: Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJvc2gxQG5hdmVyLmNvbSIsInJvbGUiOiJST0xFX09XTkVSIiwiaWF0IjoxNzQ4NDA4MTg4LCJleHAiOjE3NDg0MTE3ODh9.1iPJ40z-iX_Mr46dpa3giETFbex0jAdZE8Zpg_RK7CQnHIUKqLAR90g-YTfZl5-TDrQFNP1iLVjiJnFiXkft8g
+
+###
+GET http://localhost:10276/members/companies/testLocal.com?isPending=false&page=1
+
+###
+PUT http://localhost:10279/api/v1/members/role/5?role=ROLE_PENDING
+Authorization: Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJvc2gxQG5hdmVyLmNvbSIsInJvbGUiOiJST0xFX09XTkVSIiwiaWF0IjoxNzQ4NDA4MTg4LCJleHAiOjE3NDg0MTE3ODh9.1iPJ40z-iX_Mr46dpa3giETFbex0jAdZE8Zpg_RK7CQnHIUKqLAR90g-YTfZl5-TDrQFNP1iLVjiJnFiXkft8g
+
+###
+GET http://localhost:10279/api/v1/members/companies/companyDomain?isPending=false&page=1
+Authorization: Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJvc2gxQG5hdmVyLmNvbSIsInJvbGUiOiJST0xFX09XTkVSIiwiaWF0IjoxNzQ4NTAxNTQ0LCJleHAiOjE3NDg1MDUxNDR9.hgHNNkpyHhPrFKe0PWZKnpCyizbIFLRgLCGXB1delIviACPjRZEEfw2dbKBnXC-zGtzzn3DgwngZ0mpfJWTSeQ
