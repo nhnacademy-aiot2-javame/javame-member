@@ -1,9 +1,13 @@
 <h1 align="center">⚙️ API 서비스</h1>
 <div align="center">
 이 프로젝트는 NHN 아카데미 3팀(Javame)의 Member-API 레포지토리입니다.</br>
-전반적인 사용자 정보를 처리합니다.</br>
-사용자 정보에는 다음이 존재합니다. </br>
+전반적인 사용자 정보를 처리합니다.</br></br>
+사용자 정보에는 다음이 존재합니다. </br></br>
+
   ![image](https://github.com/user-attachments/assets/27191c85-bed1-499e-9a40-9bbb9ab9aa35)
+
+
+
 
 </br>
 </br>
@@ -11,8 +15,7 @@
 구조도는 아래와 같습니다.
 </div>
 
-![image](https://github.com/user-attachments/assets/d16aaf43-b915-43c1-9ec1-e8b108fade6a)
-
+![image](https://github.com/user-attachments/assets/f20bad71-8453-41f3-8d10-9c54bc336444)
 
 
 <div align="center">
