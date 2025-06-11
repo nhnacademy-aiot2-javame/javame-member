@@ -17,6 +17,11 @@
 
 ![image](https://github.com/user-attachments/assets/f20bad71-8453-41f3-8d10-9c54bc336444)
 
+<h3 align="center" tabindex="-1" class="heading-element" dir="auto">SonarQube 검증</h3>
+</br>
+
+![image](https://github.com/user-attachments/assets/d10cd369-2bd1-4e21-9431-f6d9c2f95b46)
+
 
 <div align="center">
 <h3 tabindex="-1" class="heading-element" dir="auto">사용스택</h3>
